@@ -214,51 +214,7 @@ export default function Banner() {
             </div>
 
             {/* Bottom Floating 4-Column Feature/Category Bar & Pagination Dots */}
-            <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10 lg:pb-12">
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-neutral-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.07)] px-4 sm:px-6 py-3 sm:py-3.5">
-                    <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-neutral-100">
-                        {categoryPills.map((cat, idx) => (
-                            <Link
-                                key={cat.title}
-                                href={cat.href}
-                                className={`flex items-center gap-3 group py-1.5 sm:py-1 px-2 sm:px-4 transition-transform hover:-translate-y-0.5 ${idx % 2 !== 0 && idx < 2 ? "pl-3" : ""
-                                    }`}
-                            >
-                                <div className="w-8 h-8 rounded-lg bg-neutral-100 group-hover:bg-amber-50 group-hover:text-amber-600 flex items-center justify-center shrink-0 transition-colors">
-                                    {cat.icon}
-                                </div>
-                                <div className="min-w-0">
-                                    <h4 className="text-xs sm:text-[13px] font-bold text-neutral-900 group-hover:text-[#f97316] transition-colors truncate">
-                                        {cat.title}
-                                    </h4>
-                                    <p className="text-[10px] sm:text-[11px] text-neutral-400 font-normal truncate">
-                                        {cat.subtitle}
-                                    </p>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
 
-                {/* Carousel Pagination Dots */}
-                <div className="flex items-center justify-center gap-1.5 pt-5 pb-2">
-                    {bannerSlides.map((_, idx) => {
-                        const isActive = idx === currentSlide;
-                        return (
-                            <button
-                                key={idx}
-                                type="button"
-                                onClick={() => setCurrentSlide(idx)}
-                                aria-label={`Go to slide ${idx + 1}`}
-                                className={`h-1.5 rounded-full transition-all duration-300 focus:outline-none ${isActive
-                                    ? "w-6 bg-[#f97316]"
-                                    : "w-1.5 bg-neutral-300 hover:bg-neutral-400"
-                                    }`}
-                            />
-                        );
-                    })}
-                </div>
-            </div>
         </section>
     );
 }
