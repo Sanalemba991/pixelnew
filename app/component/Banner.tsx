@@ -27,7 +27,7 @@ const bannerSlides: BannerSlide[] = [
             "Premium gear for photography, videography and everyday content creation.",
         shopHref: "/shop",
         exploreHref: "/collections",
-        imageSrc: "/hero.png",
+        imageSrc: "/Sony Camera and iPhone Product Display.png",
         imageAlt: "Cameras & iPhones Built for Creators",
     },
     {
@@ -214,7 +214,28 @@ export default function Banner() {
             </div>
 
             {/* Bottom Floating 4-Column Feature/Category Bar & Pagination Dots */}
+            <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10 lg:pb-12">
 
+
+                {/* Carousel Pagination Dots */}
+                <div className="flex items-center justify-center gap-1.5 pt-5 pb-2">
+                    {bannerSlides.map((_, idx) => {
+                        const isActive = idx === currentSlide;
+                        return (
+                            <button
+                                key={idx}
+                                type="button"
+                                onClick={() => setCurrentSlide(idx)}
+                                aria-label={`Go to slide ${idx + 1}`}
+                                className={`h-1.5 rounded-full transition-all duration-300 focus:outline-none ${isActive
+                                    ? "w-6 bg-[#f97316]"
+                                    : "w-1.5 bg-neutral-300 hover:bg-neutral-400"
+                                    }`}
+                            />
+                        );
+                    })}
+                </div>
+            </div>
         </section>
     );
 }
