@@ -37,14 +37,18 @@ const SLIDE_W = 1124;
 const STAGE_W = SLIDE_W + SHIFT;
 const STAGE_H = 516;
 
+/* make the card slider a little bigger (try 1.05 - 1.12). Only the cards are scaled. */
+const SLIDER_SCALE = 1.08;
+
+/* moves ONLY the cards (not the rail) left, closer to the rail line. Bigger negative = closer. */
+const CARD_DX = -85;
+
+/* moves the title & subtitle text block. Negative = more left. */
+const TEXT_DX = -58;
+
 type Quad = [number, number, number, number, number, number, number, number];
 
-/* [TLx,TLy, TRx,TRy, BRx,BRy, BLx,BLy]
-   Exact perspective matching the reference image:
-   - Card 01 (front active): wide, leans left, rests on left base.
-   - Upcoming cards (02, 03, 04) are upright/tall with their bottoms resting
-     flush along the glowing pedestal ring (BL around 448 -> 426 -> 404,
-     BR around 432 -> 412 -> 392). */
+/* [TLx,TLy, TRx,TRy, BRx,BRy, BLx,BLy] */
 const QUADS: Quad[] = [
     [198, 214, 640, 70, 612, 464, 148, 456], // 01 front
     [584, 130, 814, 114, 798, 434, 574, 450], // 02 iPhone
@@ -164,15 +168,28 @@ const Laurel = () => {
     );
 };
 
-/* rail icon centres, read from the reference */
-const RAIL_DX = -120; /* moves the rail left (the slider group is already offset by SHIFT) */
-const RAIL_DY = 36; /* shifts the rail and line downwards to clear the subtitle text */
-const RAIL: [number, number][] = [
-    [136 + RAIL_DX, 240 + RAIL_DY],
-    [110 + RAIL_DX, 301 + RAIL_DY],
-    [98 + RAIL_DX, 366 + RAIL_DY],
-    [108 + RAIL_DX, 430 + RAIL_DY],
-];
+/* ---------- LEFT RAIL (sized to the card's left edge, like the reference) ---------- */
+const RAIL_SIZE = 48; /* every button, same size */
+const RAIL_ICON = 21;
+/* card 01's left edge runs roughly y=193 -> 455 on the stage; the four buttons sit inside that span */
+const RAIL_Y = [238, 296, 354, 412];
+const ARC_R = 250; /* arc radius: bigger = flatter */
+const ARC_CY = RAIL_Y[2]; /* y of the arc's left-most point */
+const ARC_LEFT = -76; /* x of the arc's left-most point (slider-group coords) */
+const ARC_CX = ARC_LEFT + ARC_R;
+const DOT_GAP = 50; /* horizontal distance from each dot to its button centre */
+const ARC_EXTRA = 45; /* how far the line runs past the first / last dot */
+
+const arcX = (y: number) => ARC_CX - Math.sqrt(ARC_R ** 2 - (y - ARC_CY) ** 2);
+
+/* button centres follow the arc, dots sit on it at the same height */
+const RAIL: [number, number][] = RAIL_Y.map((y) => [arcX(y) + DOT_GAP, y]);
+const RAIL_DOTS = RAIL_Y.map((y) => ({ x: arcX(y), y }));
+const ARC_PATH = (() => {
+    const y0 = RAIL_Y[0] - ARC_EXTRA;
+    const y1 = RAIL_Y[RAIL_Y.length - 1] + ARC_EXTRA;
+    return `M ${arcX(y0)} ${y0} A ${ARC_R} ${ARC_R} 0 0 0 ${arcX(y1)} ${y1}`;
+})();
 
 export default function Page() {
     const ease = "cubic-bezier(0.22, 1, 0.36, 1)";
@@ -203,10 +220,14 @@ export default function Page() {
         s.opacity = String(Math.max(0, Math.min(1, v[10])));
         s.borderRadius = `${v[12]}px`;
         s.transform = toMatrix(v);
-        const w = v[8], h = v[9], r = Math.min(v[12], w / 4, h / 4), t = Math.max(0, Math.min(1, (w - FLAT[1].w) / (FLAT[0].w - FLAT[1].w))), b = h * 0.035 * t; /* bend only the front card; fades in/out as a card moves to/from the front */
+        const w = v[8], h = v[9], r = Math.min(v[12], w / 4, h / 4), t = Math.max(0, Math.min(1, (w - FLAT[1].w) / (FLAT[0].w - FLAT[1].w))), bL = h * (0.05 - 0.015 * t), /* top-left height: side cards start lower on the left... */
+            bR = h * (0.012 + 0.023 * t), /* ...and peak near the top-right corner, like the reference */
+            cy = h * (-0.015 - 0.02 * t), /* how high the top edge bows up */
+            cx = w * (0.62 - 0.12 * t), /* peak sits toward the right on side cards, centred on the front card */
+            L = w * (0.03 - 0.018 * t); /* left edge bows outward (left side curve) */
         s.setProperty(
             "--clip",
-            `path('M 0 ${b + r} Q 0 ${b} ${r} ${b} Q ${w / 2} ${-b} ${w - r} ${b} Q ${w} ${b} ${w} ${b + r} L ${w} ${h - r} Q ${w} ${h} ${w - r} ${h} L ${r} ${h} Q 0 ${h} 0 ${h - r} Z')`
+            `path('M ${L} ${bL + r} Q ${L} ${bL} ${L + r} ${bL} Q ${cx} ${cy} ${w - r} ${bR} Q ${w} ${bR} ${w} ${bR + r} L ${w} ${h - r} Q ${w} ${h} ${w - r} ${h} L ${L + r} ${h} Q ${L} ${h} ${L} ${h - r} Q ${-L} ${(bL + h) / 2} ${L} ${bL + r} Z')`
         );
         /* glowing bottom rim that follows the same bent bottom edge */
         const k = 2 + 2 * t, y0 = h;
@@ -300,6 +321,13 @@ export default function Page() {
     prevRef.current = () => run(false);
 
     useEffect(() => {
+        const timer = setInterval(() => {
+            nextRef.current();
+        }, 2000);
+        return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === "ArrowRight") nextRef.current();
             if (e.key === "ArrowLeft") prevRef.current();
@@ -318,9 +346,9 @@ export default function Page() {
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&display=swap');
         .exp-root{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#14100c}
         .exp-card{position:absolute;cursor:pointer;will-change:transform,opacity;
-          filter:drop-shadow(0 4px 14px rgba(20,8,0,.18)) drop-shadow(0 0 6px rgba(255,106,0,.15));
+          filter:drop-shadow(0 0 6px rgba(255,106,0,.15));
           transition:filter .65s ease}
-        .exp-card.active{filter:drop-shadow(0 8px 24px rgba(20,8,0,.22)) drop-shadow(0 0 10px rgba(255,106,0,.25))}
+        .exp-card.active{filter:drop-shadow(0 0 10px rgba(255,106,0,.25))}
         .exp-clip{position:absolute;inset:0;overflow:hidden;border-radius:inherit;background:#14100c;clip-path:var(--clip)}
         .exp-card .bg{position:absolute;inset:0;background-size:cover;transition:transform .9s ${ease},background-position .65s ${ease}}
         .exp-card.active .bg{transform:scale(1.05)}
@@ -330,11 +358,12 @@ export default function Page() {
         .exp-btn i{width:36px;height:36px;border-radius:50%;background:${ORANGE};color:#fff;display:grid;place-items:center}
         .exp-nav{width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;transition:transform .2s}
         .exp-nav:hover{transform:scale(1.1)}
-        .exp-rail{position:absolute;width:50px;height:50px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;
-          box-shadow:0 8px 24px rgba(0,0,0,.08);transition:all .45s ${ease}}
-        .exp-rail:hover{transform:scale(1.08)}
+        .exp-rail{position:absolute;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;
+          box-shadow:0 8px 24px rgba(0,0,0,.08);
+          transition:background .45s ${ease},color .45s ${ease},box-shadow .45s ${ease},transform .2s}
+        .exp-rail:hover{transform:scale(1.06)}
         .exp-rail.active{background:#ff6a00 !important;color:#fff !important;
-          box-shadow:0 4px 12px rgba(255,106,0,.28) !important}
+          box-shadow:0 4px 12px rgba(255,106,0,.28),0 0 22px rgba(255,106,0,.35) !important}
         @media (prefers-reduced-motion:reduce){.exp-card .bg{transition-duration:.01s!important}}
       `}</style>
 
@@ -360,7 +389,7 @@ export default function Page() {
                             <div
                                 style={{
                                     position: "absolute",
-                                    left: 800 - 330 + SHIFT,
+                                    left: 800 - 330 + SHIFT + CARD_DX,
                                     top: 240 - 330,
                                     width: 660,
                                     height: 660,
@@ -372,7 +401,7 @@ export default function Page() {
                             />
 
                             {/* Header */}
-                            <div style={{ position: "absolute", left: 16, top: 10, display: "flex", alignItems: "center", gap: 10, height: 18 }}>
+                            <div style={{ position: "absolute", left: 16 + TEXT_DX, top: 10, display: "flex", alignItems: "center", gap: 10, height: 18 }}>
                                 <span style={{ width: 32, height: 2, background: ORANGE, borderRadius: 2 }} />
                                 <span style={{ fontSize: 11, letterSpacing: "0.22em", fontWeight: 700, color: "#241c15" }}>
                                     EXPLORE COLLECTIONS
@@ -381,7 +410,7 @@ export default function Page() {
                             <h1
                                 style={{
                                     position: "absolute",
-                                    left: 14,
+                                    left: 14 + TEXT_DX,
                                     top: 36,
                                     margin: 0,
                                     fontSize: 51,
@@ -410,8 +439,8 @@ export default function Page() {
                             <p
                                 style={{
                                     position: "absolute",
-                                    left: 16,
-                                    top: 138,
+                                    left: 16 + TEXT_DX,
+                                    top: 134,
                                     margin: 0,
                                     fontSize: 14.5,
                                     lineHeight: "21px",
@@ -490,65 +519,28 @@ export default function Page() {
                                     </div>
                                 </div>
 
-                                {/* Left icon rail */}
+                                {/* Left icon rail: arc + dots (slider-group coordinates) */}
                                 <svg
                                     style={{
                                         position: "absolute",
-                                        left: RAIL_DX - 60,
-                                        top: 150 + RAIL_DY,
-                                        width: 260,
-                                        height: 380,
+                                        left: 0,
+                                        top: 0,
+                                        width: SLIDE_W,
+                                        height: STAGE_H,
                                         pointerEvents: "none",
                                         zIndex: 25,
                                         overflow: "visible",
                                     }}
-                                    viewBox="0 0 260 380"
+                                    viewBox={`0 0 ${SLIDE_W} ${STAGE_H}`}
                                     fill="none"
                                 >
-                                    {(() => {
-                                        // Center & radius of circular arc conforming around the button orbit (more curved, R=265)
-                                        const cx = 360;
-                                        const cy = 215;
-                                        const R = 265;
-
-                                        // Start/end points extending a little longer past the top and bottom dots
-                                        const pStart = { x: 172.6, y: 27.6 };
-                                        const pEnd = { x: 124.9, y: 337.4 };
-                                        const arcPath = `M ${pStart.x} ${pStart.y} A ${R} ${R} 0 0 0 ${pEnd.x} ${pEnd.y}`;
-
-                                        // Dots on the circle arc corresponding to each button with wider clean gap (no connector lines)
-                                        const dots = [
-                                            { dotX: 141.5, dotY: 65.0 },
-                                            { dotX: 106.4, dotY: 138.0 },
-                                            { dotX: 95.0, dotY: 215.0 },
-                                            { dotX: 105.8, dotY: 290.0 },
-                                        ];
-
-                                        return (
-                                            <>
-                                                {/* True circular arc curve */}
-                                                <path
-                                                    d={arcPath}
-                                                    stroke="#ff8214"
-                                                    strokeWidth="1.4"
-                                                    strokeOpacity="0.8"
-                                                    strokeLinecap="round"
-                                                />
-                                                {/* Orange dots on the circular curve */}
-                                                {dots.map((d, i) => (
-                                                    <circle
-                                                        key={i}
-                                                        cx={d.dotX}
-                                                        cy={d.dotY}
-                                                        r="3.2"
-                                                        fill="#ff6a00"
-                                                    />
-                                                ))}
-                                            </>
-                                        );
-                                    })()}
+                                    <path d={ARC_PATH} stroke="#ff8214" strokeWidth="1.4" strokeOpacity="0.8" strokeLinecap="round" />
+                                    {RAIL_DOTS.map((d, i) => (
+                                        <circle key={i} cx={d.x} cy={d.y} r="3.2" fill="#ff6a00" />
+                                    ))}
                                 </svg>
 
+                                {/* Rail buttons: all identical size, active only changes colour/glow */}
                                 {ITEMS.map((it, i) => {
                                     const on = i === shown;
                                     const [cx, cy] = RAIL[i];
@@ -559,8 +551,10 @@ export default function Page() {
                                             className={`exp-rail${on ? " active" : ""}`}
                                             onClick={() => goTo(i)}
                                             style={{
-                                                left: cx - 25,
-                                                top: cy - 25,
+                                                width: RAIL_SIZE,
+                                                height: RAIL_SIZE,
+                                                left: cx - RAIL_SIZE / 2,
+                                                top: cy - RAIL_SIZE / 2,
                                                 zIndex: 30,
                                                 background: on ? "#ff6a00" : "#ffffff",
                                                 color: on ? "#ffffff" : "#1b1510",
@@ -569,197 +563,206 @@ export default function Page() {
                                                     : "0 4px 14px rgba(60,40,20,.08)",
                                             }}
                                         >
-                                            <Icon name={it.icon} />
+                                            <Icon name={it.icon} size={RAIL_ICON} />
                                         </button>
                                     );
                                 })}
 
-                                {/* Pedestal: wide white disc, glowing orange rim that rises to the right */}
+                                {/* Cards: wrapped so the whole slider can be scaled up from the pedestal */}
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        inset: 0,
+                                        zIndex: 20,
+                                        transform: `translateX(${CARD_DX}px) scale(${SLIDER_SCALE})`,
+                                        transformOrigin: "560px 470px", /* grows from the pedestal, so the bottoms stay grounded */
+                                        pointerEvents: "none",
+                                    }}
+                                >
+                                    {ITEMS.map((it, i) => {
+                                        const p = pos[i];
+                                        const isActive = p === 0;
+                                        const [first, ...rest] = it.title.split(" ");
+                                        const reveal = (delay: number) => ({
+                                            opacity: isActive ? 1 : 0,
+                                            transform: isActive ? "none" : "translateY(8px)",
+                                            transition: `opacity .45s ease ${isActive ? delay : 0}s,transform .5s ${ease} ${isActive ? delay : 0}s`,
+                                        });
+                                        return (
+                                            <div
+                                                key={it.index}
+                                                ref={(el) => {
+                                                    cardRefs.current[i] = el;
+                                                }}
+                                                className={`exp-card${isActive ? " active" : ""}`}
+                                                onClick={() => (isActive ? undefined : goTo(i))}
+                                                style={{
+                                                    left: 0,
+                                                    top: 0,
+                                                    transformOrigin: "0 0",
+                                                    zIndex: zFor(p),
+                                                    visibility: ready ? "visible" : "hidden",
+                                                    pointerEvents: "auto",
+                                                }}
+                                            >
+                                                <div className="exp-clip">
+                                                    <div
+                                                        className="bg"
+                                                        style={{
+                                                            backgroundImage: `url(${it.img})`,
+                                                            backgroundPosition: isActive ? "right center" : "center",
+                                                        }}
+                                                    />
+                                                    <div
+                                                        style={{
+                                                            position: "absolute",
+                                                            inset: 0,
+                                                            background: isActive
+                                                                ? "linear-gradient(90deg,rgba(14,10,6,.92) 0%,rgba(14,10,6,.62) 33%,rgba(14,10,6,.08) 62%,transparent 100%),linear-gradient(0deg,rgba(14,10,6,.6),transparent 45%)"
+                                                                : "linear-gradient(180deg,rgba(14,10,6,.85) 0%,rgba(14,10,6,.08) 42%,rgba(14,10,6,.7) 100%)",
+                                                            transition: "background .5s",
+                                                        }}
+                                                    />
+                                                    <div style={{ position: "absolute", inset: 0, background: "#0b0805", opacity: "var(--dim)" }} />
 
+                                                    {/* seam shadow: the card in front visibly overlaps this one */}
+                                                    {!isActive && (
+                                                        <div
+                                                            style={{
+                                                                position: "absolute",
+                                                                inset: 0,
+                                                                pointerEvents: "none",
+                                                                background: "linear-gradient(90deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.2) 18%,transparent 40%)",
+                                                            }}
+                                                        />
+                                                    )}
 
-                                {/* Cards */}
-                                {ITEMS.map((it, i) => {
-                                    const p = pos[i];
-                                    const isActive = p === 0;
-                                    const [first, ...rest] = it.title.split(" ");
-                                    const reveal = (delay: number) => ({
-                                        opacity: isActive ? 1 : 0,
-                                        transform: isActive ? "none" : "translateY(8px)",
-                                        transition: `opacity .45s ease ${isActive ? delay : 0}s,transform .5s ${ease} ${isActive ? delay : 0}s`,
-                                    });
-                                    return (
-                                        <div
-                                            key={it.index}
-                                            ref={(el) => {
-                                                cardRefs.current[i] = el;
-                                            }}
-                                            className={`exp-card${isActive ? " active" : ""}`}
-                                            onClick={() => (isActive ? undefined : goTo(i))}
-                                            style={{
-                                                left: 0,
-                                                top: 0,
-                                                transformOrigin: "0 0",
-                                                zIndex: zFor(p),
-                                                visibility: ready ? "visible" : "hidden",
-                                            }}
-                                        >
-                                            <div className="exp-clip">
-                                                <div
-                                                    className="bg"
-                                                    style={{
-                                                        backgroundImage: `url(${it.img})`,
-                                                        backgroundPosition: isActive ? "right center" : "center",
-                                                    }}
-                                                />
-                                                <div
-                                                    style={{
-                                                        position: "absolute",
-                                                        inset: 0,
-                                                        background: isActive
-                                                            ? "linear-gradient(90deg,rgba(14,10,6,.92) 0%,rgba(14,10,6,.62) 33%,rgba(14,10,6,.08) 62%,transparent 100%),linear-gradient(0deg,rgba(14,10,6,.6),transparent 45%)"
-                                                            : "linear-gradient(180deg,rgba(14,10,6,.85) 0%,rgba(14,10,6,.08) 42%,rgba(14,10,6,.7) 100%)",
-                                                        transition: "background .5s",
-                                                    }}
-                                                />
-                                                <div style={{ position: "absolute", inset: 0, background: "#0b0805", opacity: "var(--dim)" }} />
+                                                    <div
+                                                        style={{
+                                                            position: "absolute",
+                                                            inset: 0,
+                                                            background: "radial-gradient(110% 70% at 100% 0%,rgba(255,130,20,.42),transparent 60%)",
+                                                            mixBlendMode: "screen",
+                                                        }}
+                                                    />
 
-                                                {/* seam shadow: the card in front visibly overlaps this one */}
-                                                {!isActive && (
+                                                    {/* glowing bottom edge */}
+                                                    <div
+                                                        style={{
+                                                            position: "absolute",
+                                                            left: 0,
+                                                            right: 0,
+                                                            bottom: 0,
+                                                            height: isActive ? 80 : 44,
+                                                            background: isActive
+                                                                ? "linear-gradient(0deg,rgba(255,125,20,.8) 0%,rgba(255,120,20,.3) 45%,transparent 100%)"
+                                                                : "linear-gradient(0deg,rgba(255,125,20,.45) 0%,rgba(255,120,20,.12) 50%,transparent 100%)",
+                                                            boxShadow: isActive
+                                                                ? "inset 0 -10px 22px -6px rgba(255,140,40,.65)"
+                                                                : "inset 0 -6px 14px -6px rgba(255,140,40,.4)",
+                                                            borderRadius: "inherit",
+                                                            pointerEvents: "none",
+                                                        }}
+                                                    />
                                                     <div
                                                         style={{
                                                             position: "absolute",
                                                             inset: 0,
                                                             pointerEvents: "none",
-                                                            background: "linear-gradient(90deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.2) 18%,transparent 40%)",
+                                                            clipPath: "var(--rim)",
+                                                            background: isActive ? "rgba(255,178,90,1)" : "rgba(255,170,80,.7)",
                                                         }}
                                                     />
-                                                )}
-
-                                                <div
-                                                    style={{
-                                                        position: "absolute",
-                                                        inset: 0,
-                                                        background: "radial-gradient(110% 70% at 100% 0%,rgba(255,130,20,.42),transparent 60%)",
-                                                        mixBlendMode: "screen",
-                                                    }}
-                                                />
-
-                                                {/* glowing bottom edge: same strip on every card so the bottoms read as one connected line */}
-                                                <div
-                                                    style={{
-                                                        position: "absolute",
-                                                        left: 0,
-                                                        right: 0,
-                                                        bottom: 0,
-                                                        height: isActive ? 80 : 44,
-                                                        background: isActive
-                                                            ? "linear-gradient(0deg,rgba(255,125,20,.8) 0%,rgba(255,120,20,.3) 45%,transparent 100%)"
-                                                            : "linear-gradient(0deg,rgba(255,125,20,.45) 0%,rgba(255,120,20,.12) 50%,transparent 100%)",
-                                                        boxShadow: isActive
-                                                            ? "inset 0 -10px 22px -6px rgba(255,140,40,.65)"
-                                                            : "inset 0 -6px 14px -6px rgba(255,140,40,.4)",
-                                                        borderRadius: "inherit",
-                                                        pointerEvents: "none",
-                                                    }}
-                                                />
-                                                <div
-                                                    style={{
-                                                        position: "absolute",
-                                                        inset: 0,
-                                                        pointerEvents: "none",
-                                                        clipPath: "var(--rim)",
-                                                        background: isActive ? "rgba(255,178,90,1)" : "rgba(255,170,80,.7)",
-                                                    }}
-                                                />
-                                                {/* glowing right rim: the lit edge between this card and the one behind it */}
-                                                <div
-                                                    style={{
-                                                        position: "absolute",
-                                                        top: 0,
-                                                        right: 0,
-                                                        bottom: 0,
-                                                        width: 26,
-                                                        pointerEvents: "none",
-                                                        background: "linear-gradient(270deg,rgba(255,150,50,.75) 0%,rgba(255,120,20,.25) 40%,transparent 100%)",
-                                                        borderRight: "3px solid rgba(255,185,100,1)",
-                                                        borderRadius: "inherit",
-                                                    }}
-                                                />
-                                                <div
-                                                    style={{
-                                                        position: "absolute",
-                                                        left: "calc(var(--pad) * 1px)",
-                                                        top: "calc(var(--it) * 1px)",
-                                                        right: 8,
-                                                        color: "#fff",
-                                                    }}
-                                                >
+                                                    {/* glowing right rim */}
                                                     <div
                                                         style={{
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: 8,
-                                                            height: 18,
-                                                            fontSize: "calc(var(--ifs) * 1px)",
-                                                            fontWeight: 600,
-                                                            letterSpacing: "0.04em",
-                                                            color: "rgba(255,255,255,.9)",
+                                                            position: "absolute",
+                                                            top: 0,
+                                                            right: 0,
+                                                            bottom: 0,
+                                                            width: 26,
+                                                            pointerEvents: "none",
+                                                            background: "linear-gradient(270deg,rgba(255,150,50,.75) 0%,rgba(255,120,20,.25) 40%,transparent 100%)",
+                                                            borderRight: "3px solid rgba(255,185,100,1)",
+                                                            borderRadius: "inherit",
                                                         }}
-                                                    >
-                                                        {it.index}
-                                                        <span style={{ width: 15, height: 2, background: ORANGE, borderRadius: 1, display: "inline-block" }} />
-                                                    </div>
-                                                    <h3
-                                                        style={{
-                                                            margin: 0,
-                                                            marginTop: "calc(var(--tmt) * 1px)",
-                                                            fontWeight: 800,
-                                                            letterSpacing: "-0.03em",
-                                                            fontSize: "calc(var(--tfs) * 1px)",
-                                                            lineHeight: "calc(var(--tlh) * 1px)",
-                                                            textShadow: "0 2px 8px rgba(0,0,0,.5)",
-                                                        }}
-                                                    >
-                                                        {first}
-                                                        <br />
-                                                        {rest.join(" ")}
-                                                    </h3>
-                                                    <p
-                                                        style={{
-                                                            margin: "10px 0 0",
-                                                            maxWidth: 240,
-                                                            fontSize: 18,
-                                                            lineHeight: "25px",
-                                                            fontWeight: 450,
-                                                            color: "rgba(255,255,255,.9)",
-                                                            textShadow: "0 1px 4px rgba(0,0,0,.5)",
-                                                            ...reveal(0.3),
-                                                        }}
-                                                    >
-                                                        {it.sub}
-                                                    </p>
-
+                                                    />
                                                     <div
                                                         style={{
-                                                            marginTop: 18,
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            pointerEvents: isActive ? "auto" : "none",
-                                                            ...reveal(0.35),
+                                                            position: "absolute",
+                                                            left: "calc(var(--pad) * 1px)",
+                                                            top: "calc(var(--it) * 1px)",
+                                                            right: 8,
+                                                            color: "#fff",
                                                         }}
                                                     >
-                                                        <button className="exp-btn">
-                                                            {it.cta}
-                                                            <i>
-                                                                <Arrow size={16} />
-                                                            </i>
-                                                        </button>
+                                                        <div
+                                                            style={{
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: 8,
+                                                                height: 18,
+                                                                fontSize: "calc(var(--ifs) * 1px)",
+                                                                fontWeight: 600,
+                                                                letterSpacing: "0.04em",
+                                                                color: "rgba(255,255,255,.9)",
+                                                            }}
+                                                        >
+                                                            {it.index}
+                                                            <span style={{ width: 15, height: 2, background: ORANGE, borderRadius: 1, display: "inline-block" }} />
+                                                        </div>
+                                                        <h3
+                                                            style={{
+                                                                margin: 0,
+                                                                marginTop: "calc(var(--tmt) * 1px)",
+                                                                fontWeight: 800,
+                                                                letterSpacing: "-0.03em",
+                                                                fontSize: "calc(var(--tfs) * 1px)",
+                                                                lineHeight: "calc(var(--tlh) * 1px)",
+                                                                textShadow: "0 2px 8px rgba(0,0,0,.5)",
+                                                            }}
+                                                        >
+                                                            {first}
+                                                            <br />
+                                                            {rest.join(" ")}
+                                                        </h3>
+                                                        <p
+                                                            style={{
+                                                                margin: "10px 0 0",
+                                                                maxWidth: 240,
+                                                                fontSize: 18,
+                                                                lineHeight: "25px",
+                                                                fontWeight: 450,
+                                                                color: "rgba(255,255,255,.9)",
+                                                                textShadow: "0 1px 4px rgba(0,0,0,.5)",
+                                                                ...reveal(0.3),
+                                                            }}
+                                                        >
+                                                            {it.sub}
+                                                        </p>
+
+                                                        <div
+                                                            style={{
+                                                                marginTop: 18,
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                pointerEvents: isActive ? "auto" : "none",
+                                                                ...reveal(0.35),
+                                                            }}
+                                                        >
+                                                            <button className="exp-btn">
+                                                                {it.cta}
+                                                                <i>
+                                                                    <Arrow size={16} />
+                                                                </i>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
                     </div>
