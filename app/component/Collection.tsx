@@ -53,10 +53,10 @@ const QUADS: Quad[] = [
 ];
 
 const FLAT = [
-    { w: 560, h: 340, rad: 30, dim: 0, pad: 48, it: 60, ifs: 14, tmt: 20, tfs: 34, tlh: 37 },
-    { w: 230, h: 322, rad: 24, dim: 0.1, pad: 80, it: 30, ifs: 13, tmt: 8, tfs: 19, tlh: 23 },
-    { w: 200, h: 274, rad: 22, dim: 0.18, pad: 68, it: 26, ifs: 12, tmt: 8, tfs: 17.5, tlh: 21 },
-    { w: 170, h: 222, rad: 20, dim: 0.28, pad: 60, it: 22, ifs: 11, tmt: 8, tfs: 15.5, tlh: 18 },
+    { w: 560, h: 340, rad: 30, dim: 0, pad: 48, it: 50, ifs: 16, tmt: 14, tfs: 42, tlh: 44 },
+    { w: 230, h: 322, rad: 24, dim: 0.1, pad: 80, it: 30, ifs: 14, tmt: 8, tfs: 21, tlh: 25 },
+    { w: 200, h: 274, rad: 22, dim: 0.18, pad: 68, it: 26, ifs: 13, tmt: 8, tfs: 19, tlh: 23 },
+    { w: 170, h: 222, rad: 20, dim: 0.28, pad: 60, it: 22, ifs: 12, tmt: 8, tfs: 17, tlh: 20 },
 ];
 
 const Z = [20, 15, 10, 5];
@@ -324,10 +324,10 @@ export default function Page() {
         .exp-clip{position:absolute;inset:0;overflow:hidden;border-radius:inherit;background:#14100c;clip-path:var(--clip)}
         .exp-card .bg{position:absolute;inset:0;background-size:cover;transition:transform .9s ${ease},background-position .65s ${ease}}
         .exp-card.active .bg{transform:scale(1.05)}
-        .exp-btn{display:inline-flex;align-items:center;gap:12px;background:#fff;color:#1b1510;border:0;border-radius:999px;
-          height:46px;padding:0 6px 0 22px;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;
-          box-shadow:0 8px 24px rgba(0,0,0,.4);white-space:nowrap}
-        .exp-btn i{width:34px;height:34px;border-radius:50%;background:${ORANGE};color:#fff;display:grid;place-items:center}
+        .exp-btn{display:inline-flex;align-items:center;gap:13px;background:#fff;color:#1b1510;border:0;border-radius:999px;
+          height:50px;padding:0 8px 0 22px;font-family:inherit;font-weight:750;font-size:15px;cursor:pointer;
+          box-shadow:0 8px 24px rgba(0,0,0,.45);white-space:nowrap;letter-spacing:-0.01em}
+        .exp-btn i{width:36px;height:36px;border-radius:50%;background:${ORANGE};color:#fff;display:grid;place-items:center}
         .exp-nav{width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;transition:transform .2s}
         .exp-nav:hover{transform:scale(1.1)}
         .exp-rail{position:absolute;width:50px;height:50px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;
@@ -698,24 +698,26 @@ export default function Page() {
                                                         style={{
                                                             display: "flex",
                                                             alignItems: "center",
-                                                            gap: 7,
-                                                            height: 16,
+                                                            gap: 8,
+                                                            height: 18,
                                                             fontSize: "calc(var(--ifs) * 1px)",
-                                                            fontWeight: 500,
-                                                            color: "rgba(255,255,255,.75)",
+                                                            fontWeight: 600,
+                                                            letterSpacing: "0.04em",
+                                                            color: "rgba(255,255,255,.9)",
                                                         }}
                                                     >
                                                         {it.index}
-                                                        <span style={{ width: 12, height: 1.5, background: ORANGE, display: "inline-block" }} />
+                                                        <span style={{ width: 15, height: 2, background: ORANGE, borderRadius: 1, display: "inline-block" }} />
                                                     </div>
                                                     <h3
                                                         style={{
                                                             margin: 0,
                                                             marginTop: "calc(var(--tmt) * 1px)",
-                                                            fontWeight: 700,
-                                                            letterSpacing: "-0.02em",
+                                                            fontWeight: 800,
+                                                            letterSpacing: "-0.03em",
                                                             fontSize: "calc(var(--tfs) * 1px)",
                                                             lineHeight: "calc(var(--tlh) * 1px)",
+                                                            textShadow: "0 2px 8px rgba(0,0,0,.5)",
                                                         }}
                                                     >
                                                         {first}
@@ -724,33 +726,35 @@ export default function Page() {
                                                     </h3>
                                                     <p
                                                         style={{
-                                                            margin: "8px 0 0",
-                                                            maxWidth: 190,
-                                                            fontSize: 16,
-                                                            lineHeight: "22px",
-                                                            color: "rgba(255,255,255,.7)",
+                                                            margin: "10px 0 0",
+                                                            maxWidth: 240,
+                                                            fontSize: 18,
+                                                            lineHeight: "25px",
+                                                            fontWeight: 450,
+                                                            color: "rgba(255,255,255,.9)",
+                                                            textShadow: "0 1px 4px rgba(0,0,0,.5)",
                                                             ...reveal(0.3),
                                                         }}
                                                     >
                                                         {it.sub}
                                                     </p>
-                                                </div>
 
-                                                <div
-                                                    style={{
-                                                        position: "absolute",
-                                                        left: 48,
-                                                        bottom: 42,
-                                                        pointerEvents: isActive ? "auto" : "none",
-                                                        ...reveal(0.35),
-                                                    }}
-                                                >
-                                                    <button className="exp-btn">
-                                                        {it.cta}
-                                                        <i>
-                                                            <Arrow size={14} />
-                                                        </i>
-                                                    </button>
+                                                    <div
+                                                        style={{
+                                                            marginTop: 18,
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            pointerEvents: isActive ? "auto" : "none",
+                                                            ...reveal(0.35),
+                                                        }}
+                                                    >
+                                                        <button className="exp-btn">
+                                                            {it.cta}
+                                                            <i>
+                                                                <Arrow size={16} />
+                                                            </i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
