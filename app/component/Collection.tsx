@@ -48,12 +48,13 @@ const TEXT_DX = -58;
 
 type Quad = [number, number, number, number, number, number, number, number];
 
-/* [TLx,TLy, TRx,TRy, BRx,BRy, BLx,BLy] */
+/* [TLx,TLy, TRx,TRy, BRx,BRy, BLx,BLy]
+   Side cards: the bottom x values sit LEFT of the top x values, so the vertical edges lean toward the bottom-left. */
 const QUADS: Quad[] = [
     [198, 214, 640, 70, 612, 464, 148, 456], // 01 front
-    [584, 130, 814, 114, 798, 434, 574, 450], // 02 iPhone
-    [774, 160, 970, 146, 956, 418, 758, 432], // 03 Accessories
-    [930, 194, 1098, 184, 1086, 402, 918, 414], // 04 Lenses
+    [584, 130, 814, 114, 774, 434, 552, 450], // 02 iPhone
+    [774, 160, 970, 146, 930, 418, 732, 432], // 03 Accessories
+    [930, 194, 1098, 184, 1060, 402, 892, 414], // 04 Lenses
 ];
 
 const FLAT = [
@@ -97,7 +98,8 @@ function toMatrix(v: number[]) {
     return `matrix3d(${a / w},${d / w},0,${g / w},${b / h},${e / h},0,${hh / h},0,0,1,0,${c},${f},0,1)`;
 }
 
-const easeOut = (t: number) => 1 - Math.pow(1 - t, 4);
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 const Icon = ({ name, size = 22 }: { name: Item["icon"]; size?: number }) => {
     const p = {
@@ -220,16 +222,20 @@ export default function Page() {
         s.opacity = String(Math.max(0, Math.min(1, v[10])));
         s.borderRadius = `${v[12]}px`;
         s.transform = toMatrix(v);
-        const w = v[8], h = v[9], r = Math.min(v[12], w / 4, h / 4), t = Math.max(0, Math.min(1, (w - FLAT[1].w) / (FLAT[0].w - FLAT[1].w))), bL = h * (0.05 - 0.015 * t), /* top-left height: side cards start lower on the left... */
-            bR = h * (0.012 + 0.023 * t), /* ...and peak near the top-right corner, like the reference */
-            cy = h * (-0.015 - 0.02 * t), /* how high the top edge bows up */
-            cx = w * (0.62 - 0.12 * t), /* peak sits toward the right on side cards, centred on the front card */
-            L = w * (0.03 - 0.018 * t); /* left edge bows outward (left side curve) */
+
+        const w = v[8], h = v[9], r = Math.min(v[12], w / 4, h / 4),
+            /* t = 1 on the active card, 0 on the side cards (fades smoothly while sliding) */
+            t = Math.max(0, Math.min(1, (w - FLAT[1].w) / (FLAT[0].w - FLAT[1].w))),
+            bL = h * 0.035 * t, /* top-left drop, only on the active card */
+            bR = h * 0.035 * t, /* top-right drop, only on the active card */
+            cy = -h * 0.035 * t, /* top edge bow, only on the active card */
+            cx = w * 0.5,
+            L = w * 0.012 * t; /* left edge bow, only on the active card */
         s.setProperty(
             "--clip",
             `path('M ${L} ${bL + r} Q ${L} ${bL} ${L + r} ${bL} Q ${cx} ${cy} ${w - r} ${bR} Q ${w} ${bR} ${w} ${bR + r} L ${w} ${h - r} Q ${w} ${h} ${w - r} ${h} L ${L + r} ${h} Q ${L} ${h} ${L} ${h - r} Q ${-L} ${(bL + h) / 2} ${L} ${bL + r} Z')`
         );
-        /* glowing bottom rim that follows the same bent bottom edge */
+        /* glowing bottom rim that follows the same bottom edge */
         const k = 2 + 2 * t, y0 = h;
         s.setProperty(
             "--rim",
@@ -245,13 +251,13 @@ export default function Page() {
     }, []);
 
     const animate = useCallback(
-        (targets: number[][], ms: number, done?: () => void) => {
+        (targets: number[][], ms: number, done?: () => void, fn: (t: number) => number = easeOut) => {
             cancelAnimationFrame(raf.current);
             const from = cur.current.map((v) => v.slice());
             const t0 = performance.now();
             const tick = (now: number) => {
                 const t = Math.min(1, (now - t0) / ms);
-                const e = easeOut(t);
+                const e = fn(t);
                 cur.current = from.map((f, i) => f.map((x, k) => x + (targets[i][k] - x) * e));
                 cur.current.forEach((_, i) => apply(i));
                 if (t < 1) raf.current = requestAnimationFrame(tick);
@@ -284,7 +290,7 @@ export default function Page() {
         busy.current = true;
         const first = posRef.current.map((p) => (forward ? p - 1 : p + 1));
         commit(first);
-        animate(first.map(slotVec), 560, () => {
+        animate(first.map(slotVec), 1100, () => {
             const from = forward ? -1 : N;
             const to = forward ? N : -1;
             const idx = first.indexOf(from);
@@ -297,11 +303,11 @@ export default function Page() {
             const third = second.map((p) => (p === to ? (forward ? N - 1 : 0) : p));
             requestAnimationFrame(() => {
                 commit(third);
-                animate(third.map(slotVec), 520, () => {
+                animate(third.map(slotVec), 900, () => {
                     busy.current = false;
                 });
             });
-        });
+        }, easeInOut);
     };
 
     const goTo = (i: number) => {
@@ -310,9 +316,9 @@ export default function Page() {
         busy.current = true;
         const target = ITEMS.map((_, j) => (j - i + N) % N);
         commit(target);
-        animate(target.map(slotVec), 700, () => {
+        animate(target.map(slotVec), 1200, () => {
             busy.current = false;
-        });
+        }, easeInOut);
     };
 
     const nextRef = useRef(() => { });
@@ -323,7 +329,7 @@ export default function Page() {
     useEffect(() => {
         const timer = setInterval(() => {
             nextRef.current();
-        }, 2000);
+        }, 4500);
         return () => clearInterval(timer);
     }, []);
 
