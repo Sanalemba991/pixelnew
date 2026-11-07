@@ -24,7 +24,7 @@ const iconProps = {
 
 const featureBadges: FeatureBadge[] = [
     {
-        label: "Genuine Products",
+        label: "100% Genuine Gear",
         icon: (
             <svg {...iconProps}>
                 <circle cx="12" cy="8.5" r="5.5" />
@@ -34,7 +34,7 @@ const featureBadges: FeatureBadge[] = [
         ),
     },
     {
-        label: "Official Warranty",
+        label: "Brand Warranty",
         icon: (
             <svg {...iconProps}>
                 <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
@@ -43,7 +43,7 @@ const featureBadges: FeatureBadge[] = [
         ),
     },
     {
-        label: "Fast & Secure Delivery",
+        label: "Express Shipping",
         icon: (
             <svg {...iconProps}>
                 <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
@@ -57,7 +57,7 @@ const featureBadges: FeatureBadge[] = [
         ),
     },
     {
-        label: "Expert Support",
+        label: "Creator Support",
         icon: (
             <svg {...iconProps}>
                 <path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z" />
@@ -282,51 +282,58 @@ export default function Why({
                         <div className="flex items-center gap-4">
                             <span className="w-10 sm:w-14 h-[2px] bg-[#f97316] inline-block" />
                             <span className="text-[10px] sm:text-[11px] font-extrabold tracking-[0.3em] text-[#1e1e1e] uppercase">
-                                WHY CHOOSE PIXEL STORE
+                                ABOUT PIXEL STORE
                             </span>
                         </div>
 
                         <h2 className="text-4xl sm:text-5xl lg:text-[54px] font-black tracking-[-0.035em] text-neutral-950 leading-[1.08]">
-                            <span className="block">More Than a Store,</span>
+                            <span className="block">Your Premier Tech &</span>
                             <span className="block mt-1">
-                                <span className="text-neutral-950 mr-3">A</span>
-                                <span className="text-[#f97316] italic">Creator&apos;s Partner.</span>
+                                <span className="text-[#f97316] italic">Creator Destination.</span>
                             </span>
                         </h2>
 
-                        <p className="text-neutral-600 text-sm sm:text-[15px] max-w-md leading-relaxed">
-                            Curated tech, expert guidance and a seamless
-                            <br className="hidden sm:block" />{" "}
-                            buying experience for creators, professionals and everyday users.
+                        <p className="text-neutral-600 text-sm sm:text-[15px] max-w-lg leading-relaxed">
+                            At Pixel Store, we bring the latest flagship iPhones, professional mirrorless cameras, cinema gear, and premium accessories straight to your setup. With certified genuine authenticity, official warranties, and creator-first guidance, we empower filmmakers, photographers, and visionaries to produce their finest work.
                         </p>
 
-                        <div className="pt-1">
-                            <Link
-                                href="/about"
-                                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#18181b] hover:bg-neutral-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-md shadow-neutral-900/10 active:scale-95"
-                            >
-                                <span>Explore Our Advantages</span>
-                                <span className="text-sm leading-none">→</span>
-                            </Link>
+                        {/* Pixel Highlights List */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 max-w-lg">
+                            <div className="flex items-start gap-2.5">
+                                <span className="w-5 h-5 rounded-full bg-orange-100 text-[#f97316] flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">✓</span>
+                                <div className="text-xs">
+                                    <span className="font-bold text-neutral-900 block">Authorized Retailer</span>
+                                    <span className="text-neutral-500">Official brand warranties with guaranteed support.</span>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                                <span className="w-5 h-5 rounded-full bg-orange-100 text-[#f97316] flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">✓</span>
+                                <div className="text-xs">
+                                    <span className="font-bold text-neutral-900 block">Pro Creator Gear</span>
+                                    <span className="text-neutral-500">Sony, Apple, DJI, and top optics tested for pros.</span>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                                <span className="w-5 h-5 rounded-full bg-orange-100 text-[#f97316] flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">✓</span>
+                                <div className="text-xs">
+                                    <span className="font-bold text-neutral-900 block">Express Delivery</span>
+                                    <span className="text-neutral-500">Insured, tracked, and safely packaged direct to you.</span>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                                <span className="w-5 h-5 rounded-full bg-orange-100 text-[#f97316] flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">✓</span>
+                                <div className="text-xs">
+                                    <span className="font-bold text-neutral-900 block">Hassle-Free Care</span>
+                                    <span className="text-neutral-500">Easy returns and dedicated post-purchase service.</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="pt-6 sm:pt-8 grid grid-cols-4 divide-x divide-neutral-200 max-w-xl">
-                            {featureBadges.map((badge, idx) => (
-                                <motion.div
-                                    key={badge.label}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: false, amount: 0.25 }}
-                                    transition={{ duration: 0.5, delay: 0.2 + idx * 0.1, ease: "easeOut" }}
-                                    className="flex flex-col items-center justify-start gap-2.5 px-1.5 sm:px-3 text-center"
-                                >
-                                    {badge.icon}
-                                    <span className="text-[10px] sm:text-xs font-semibold text-neutral-900 leading-snug">
-                                        {badge.label}
-                                    </span>
-                                </motion.div>
-                            ))}
-                        </div>
+                        {/* Pixel Store Stats */}
+
+
+                        {/* Feature Badges Bar */}
+
                     </motion.div>
 
                     {/* ───────── Right column (cards animate in individually) ───────── */}
