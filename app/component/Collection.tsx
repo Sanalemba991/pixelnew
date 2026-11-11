@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 const U = (id: string, w = 1000) =>
     `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
@@ -13,13 +14,14 @@ type Item = {
     cta: string;
     img: string;
     icon: "camera" | "phone" | "headphones" | "grid";
+    href: string;
 };
 
 const ITEMS: Item[] = [
-    { index: "01", title: "Camera Collection", sub: "For photographers, filmmakers & creators.", cta: "Explore Cameras", img: "/prod-camera.jpg", icon: "camera" },
-    { index: "02", title: "iPhone Collection", sub: "Latest iPhones, cases & more.", cta: "Explore iPhones", img: "/prod-iphone.jpg", icon: "phone" },
-    { index: "03", title: "Accessories Collection", sub: "Headphones, audio & gear.", cta: "Explore Accessories", img: "/prod-headphones.jpg", icon: "headphones" },
-    { index: "04", title: "Lenses Collection", sub: "Prime, zoom & cinema lenses.", cta: "Explore Lenses", img: "/prod-lens.jpg", icon: "grid" },
+    { index: "01", title: "Camera Collection", sub: "For photographers, filmmakers & creators.", cta: "Explore Cameras", img: "/prod-camera.jpg", icon: "camera", href: "/category/cameras" },
+    { index: "02", title: "iPhone Collection", sub: "Latest iPhones, cases & more.", cta: "Explore iPhones", img: "/prod-iphone.jpg", icon: "phone", href: "/category/iphone-accessories" },
+    { index: "03", title: "Accessories Collection", sub: "Headphones, audio & gear.", cta: "Explore Accessories", img: "/prod-headphones.jpg", icon: "headphones", href: "/category/iphone-accessories" },
+    { index: "04", title: "Lenses Collection", sub: "Prime, zoom & cinema lenses.", cta: "Explore Lenses", img: "/prod-lens.jpg", icon: "grid", href: "/category/lenses" },
 ];
 
 const AVATARS = [
@@ -756,12 +758,12 @@ export default function Page() {
                                                                 ...reveal(0.35),
                                                             }}
                                                         >
-                                                            <button className="exp-btn">
+                                                            <Link href={it.href} className="exp-btn">
                                                                 {it.cta}
                                                                 <i>
                                                                     <Arrow size={16} />
                                                                 </i>
-                                                            </button>
+                                                            </Link>
                                                         </div>
                                                     </div>
                                                 </div>

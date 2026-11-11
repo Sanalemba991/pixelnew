@@ -176,18 +176,36 @@ export default function Contact() {
 
     useEffect(() => {
         const check = () => {
-            const parts = new Intl.DateTimeFormat("en-GB", {
-                timeZone: "Asia/Kolkata",
-                weekday: "short",
-                hour: "numeric",
-                hour12: false,
-            }).formatToParts(new Date());
-            const day = parts.find((p) => p.type === "weekday")?.value;
-            const hr = Number(parts.find((p) => p.type === "hour")?.value);
-            setIsOpen(day !== "Sun" && hr >= 10 && hr < 20);
+            try {
+                const parts = new Intl.DateTimeFormat("en-GB", {
+                    timeZone: "Asia/Kolkata",
+                    weekday: "short",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: false,
+                }).formatToParts(new Date());
+
+                const day = parts.find((p) => p.type === "weekday")?.value;
+                const hr = Number(parts.find((p) => p.type === "hour")?.value);
+                const min = Number(parts.find((p) => p.type === "minute")?.value || 0);
+
+                // Monday to Saturday: 10:00 AM to 8:00 PM IST (600 to 1200 minutes)
+                const currentMinuteOfDay = hr * 60 + min;
+                const isWorkingDay = day !== "Sun";
+                const isWithinWorkingHours = currentMinuteOfDay >= 10 * 60 && currentMinuteOfDay < 20 * 60;
+
+                setIsOpen(isWorkingDay && isWithinWorkingHours);
+            } catch {
+                // Fallback to local time if Intl with timeZone is not supported
+                const now = new Date();
+                const day = now.getDay(); // 0 is Sunday
+                const hr = now.getHours();
+                setIsOpen(day !== 0 && hr >= 10 && hr < 20);
+            }
         };
+
         check();
-        const id = setInterval(check, 60000);
+        const id = setInterval(check, 30000); // Check every 30 seconds
         return () => clearInterval(id);
     }, []);
 
@@ -324,6 +342,14 @@ export default function Contact() {
         hidden: { opacity: 0, y: 24 },
         show: { opacity: 1, y: 0, transition: { duration: 0.75, ease } },
     };
+    const fromLeft: Variants = {
+        hidden: { opacity: 0, x: -60 },
+        show: { opacity: 1, x: 0, transition: { duration: 0.85, ease } },
+    };
+    const fromRight: Variants = {
+        hidden: { opacity: 0, x: 60 },
+        show: { opacity: 1, x: 0, transition: { duration: 0.85, ease } },
+    };
     const stagger = (s = 0.1): Variants => ({
         hidden: {},
         show: { transition: { staggerChildren: s } },
@@ -411,70 +437,17 @@ export default function Contact() {
                                     </motion.span>
                                 </motion.button>
 
-                                <a
-                                    href="https://wa.me/919876543210"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/90 hover:bg-white text-neutral-900 font-semibold text-xs sm:text-sm border border-neutral-300 shadow-sm backdrop-blur-sm transition-all"
-                                >
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span>Live WhatsApp Desk</span>
-                                </a>
+
                             </div>
 
-                            <div className="flex items-center gap-6 pt-3 text-[11px] sm:text-xs text-neutral-500 font-medium">
-                                <span className="flex items-center gap-1.5">
-                                    <span className="text-[#f97316] font-bold">✓</span> ~5m Average WhatsApp SLA
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <span className="text-[#f97316] font-bold">✓</span> Direct Verified Engineers
-                                </span>
-                            </div>
+
                         </motion.div>
                     </div>
 
-                    <div className="relative z-10 border-t border-neutral-200/80 bg-white/60 backdrop-blur-md py-3.5 px-4 sm:px-8">
-                        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs text-neutral-600">
-                            <span className="font-semibold text-neutral-900 flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${isOpen === false ? "bg-neutral-400" : "bg-[#f97316]"}`} />
-                                {isOpen === false
-                                    ? "Store Status: Closed now. WhatsApp and email replies resume at 10:00 AM IST"
-                                    : "Store Status: Open & Dispatching Daily (10:00 AM – 8:00 PM IST)"}
-                            </span>
-                            <span className="hidden sm:inline text-neutral-500">
-                                📍 Flagship Experience Hub: Indiranagar, Bengaluru
-                            </span>
-                        </div>
-                    </div>
+
                 </section>
 
-                {/* ================= NEW: BRAND MARQUEE ================= */}
-                <section className="py-10 border-b border-neutral-200/70 bg-white overflow-hidden" aria-label="Brands we stock">
-                    <p className="text-center text-xs text-neutral-500 mb-6 font-medium">
-                        Authorized stock from the brands creators trust
-                    </p>
-                    <div className="relative">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 z-10 bg-gradient-to-r from-white to-transparent" />
-                        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 z-10 bg-gradient-to-l from-white to-transparent" />
-                        <motion.div
-                            className="flex w-max gap-12 sm:gap-16"
-                            animate={{ x: ["0%", "-50%"] }}
-                            transition={{ duration: 32, ease: "linear", repeat: Infinity }}
-                        >
-                            {[...brands, ...brands].map((b, i) => (
-                                <span
-                                    key={`${b}-${i}`}
-                                    className="text-2xl sm:text-3xl font-black tracking-tight text-neutral-300 hover:text-[#f97316] transition-colors"
-                                >
-                                    {b}
-                                </span>
-                            ))}
-                        </motion.div>
-                    </div>
-                </section>
-
-                {/* ================= 4 DIRECT SUPPORT CHANNELS ================= */}
-                <section className="py-16 sm:py-20 border-b border-neutral-200/70">
+                <section className="py-16 sm:py-20">
                     <div className={wrap}>
                         {sectionHead(
                             "REACH OUR TEAM",
@@ -492,11 +465,11 @@ export default function Contact() {
                                 <motion.div
                                     key={c.title}
                                     variants={pop}
-                                    whileHover={{ y: -6, transition: { duration: 0.4, ease } }}
+
                                     whileTap={{ scale: 0.98 }}
-                                    className={`rounded-[22px] bg-white border p-6 transition-all flex flex-col justify-between group relative ${c.highlight
-                                        ? "border-[#f97316]/60 shadow-[0_10px_30px_rgba(249,115,22,0.1)] ring-1 ring-[#f97316]/20"
-                                        : "border-neutral-200/80 shadow-[0_4px_22px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_32px_rgba(249,115,22,0.12)] hover:border-[#f97316]/40"
+                                    className={`rounded-[12px] bg-white p-6 transition-all flex flex-col justify-between group relative ${c.highlight
+                                        ? " shadow-[0_10px_30px_rgba(249,115,22,0.1)] ring-1 ring-[#f97316]/20"
+                                        : " shadow-[0_4px_22px_rgba(0,0,0,0.03)] "
                                         }`}
                                 >
                                     {c.highlight && (
@@ -507,7 +480,7 @@ export default function Contact() {
                                     <div>
                                         <div className="flex items-center justify-between gap-2 mb-5">
                                             <motion.div
-                                                whileHover={{ rotate: -6, scale: 1.1 }}
+
                                                 transition={{ duration: 0.4, ease }}
                                                 className="p-3.5 rounded-2xl bg-[#fff7f4] border border-[#fbe9dc]"
                                             >
@@ -572,28 +545,6 @@ export default function Contact() {
                     </div>
                 </section>
 
-                {/* ================= WHY PIXEL STORE / VALUE PILLARS ================= */}
-                <section className="py-14 sm:py-16 bg-[#faf8f5] border-b border-neutral-200/70">
-                    <div className={wrap}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {perks.map((p, idx) => (
-                                <motion.div
-                                    key={p.title}
-                                    variants={up}
-                                    {...view}
-                                    transition={{ duration: 0.6, delay: idx * 0.08 }}
-                                    className="flex flex-col gap-2.5 p-5 rounded-2xl bg-white border border-neutral-200/80 shadow-xs hover:border-[#f97316]/40 transition-colors"
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-[#fff7f4] border border-[#fbe9dc] flex items-center justify-center shrink-0">
-                                        {ic(p.icon, "w-5 h-5")}
-                                    </div>
-                                    <h4 className="text-sm font-bold text-neutral-900">{p.title}</h4>
-                                    <p className="text-xs text-neutral-500 leading-relaxed font-normal">{p.desc}</p>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
 
                 {/* ================= NEW: HOW IT WORKS ================= */}
                 <section className="py-16 sm:py-20 bg-white border-b border-neutral-200/70">
@@ -624,12 +575,12 @@ export default function Contact() {
                 </section>
 
                 {/* ================= INQUIRY FORM & EXPERIENCE STUDIO SECTION ================= */}
-                <section id="contact-form" className="py-16 sm:py-24 scroll-mt-6">
+                <section id="contact-form" className="py-16 sm:py-24 scroll-mt-6 overflow-hidden">
                     <div className={wrap}>
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-                            {/* Form Column */}
+                            {/* Form Column - slides in from LEFT */}
                             <motion.div
-                                variants={up}
+                                variants={fromLeft}
                                 {...view}
                                 animate={{
                                     boxShadow: formHighlight
@@ -637,7 +588,7 @@ export default function Contact() {
                                         : "0 12px 40px rgba(0,0,0,0.04)",
                                 }}
                                 transition={{ duration: 0.9, ease }}
-                                className="lg:col-span-7 bg-white rounded-[28px] border border-neutral-200/90 p-7 sm:p-10 relative overflow-hidden"
+                                className="lg:col-span-7 bg-white rounded-[12px] border border-neutral-200/90 p-7 sm:p-10 relative overflow-hidden"
                             >
                                 <div className="flex items-center gap-2.5 mb-2.5">
                                     <span className="w-6 h-[2px] bg-[#f97316] rounded-full inline-block" />
@@ -780,75 +731,25 @@ export default function Contact() {
                                 </AnimatePresence>
                             </motion.div>
 
-                            {/* Experience Studio & Commitments Column */}
-                            <motion.div variants={stagger(0.14)} {...view} className="lg:col-span-5 space-y-6">
-                                <motion.div
-                                    variants={up}
-                                    whileHover={{ y: -4 }}
-                                    transition={{ duration: 0.4, ease }}
-                                    className="rounded-[28px] bg-neutral-950 text-white p-7 sm:p-9 shadow-xl relative overflow-hidden border border-neutral-800"
+                            {/* Experience Studio & Commitments Column - slides in from RIGHT */}
+                            <motion.div variants={fromRight} {...view} className="lg:col-span-5 space-y-6">
+                                {/* Interactive Google Maps Card */}
+                                <div
+                                    className="rounded-[12px] bg-white border border-neutral-200/90 shadow-xl overflow-hidden relative"
                                 >
-                                    <div className="relative z-10">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <span className="w-5 h-[2px] bg-[#f97316] rounded-full inline-block" />
-                                            <span className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-[#f97316] font-mono">
-                                                FLAGSHIP HUB
-                                            </span>
-                                        </div>
-                                        <h3 className="text-2xl font-black text-white mb-2.5 tracking-tight">Pixel Experience Studio</h3>
-                                        <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed mb-6 font-normal">
-                                            Test cinema cameras, evaluate prime lenses, preview iPhone recording rigs, and collect online orders in person.
-                                        </p>
-
-                                        <div className="space-y-3.5 pt-3 border-t border-neutral-800/80 text-xs sm:text-[13px] text-neutral-300">
-                                            <div className="flex items-start gap-3">
-                                                <span className="text-[#f97316] text-base shrink-0">📍</span>
-                                                <span>Level 3, Creator Hub, 100ft Road, Indiranagar, Bengaluru, KA 560038</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-[#f97316] text-base shrink-0">⏰</span>
-                                                <span>Mon – Sat: 10:00 AM – 8:00 PM IST (Sundays by appt)</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-[#f97316] text-base shrink-0">🛡️</span>
-                                                <span>Direct authorized warranty validation & pick-up</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-[#f97316] text-base shrink-0">⚡</span>
-                                                <span>Studio trial bay with calibrated LED lighting</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-7 pt-5 border-t border-neutral-800/80 flex flex-wrap items-center gap-3">
-                                            <motion.a
-                                                href="https://maps.google.com"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                whileHover={{ y: -2, scale: 1.03 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                transition={{ duration: 0.35, ease }}
-                                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-neutral-950 font-bold text-xs hover:bg-neutral-100 transition-all"
-                                            >
-                                                <span>Open in Google Maps</span>
-                                                <span>↗</span>
-                                            </motion.a>
-
-                                            <a
-                                                href="tel:18001237493"
-                                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-neutral-900 text-neutral-300 hover:text-white font-semibold text-xs border border-neutral-800 transition-all"
-                                            >
-                                                <span>Call Studio Desk</span>
-                                            </a>
-                                        </div>
+                                    {/* Pure Map */}
+                                    <div className="relative w-full h-[460px] sm:h-[500px] bg-neutral-100 overflow-hidden">
+                                        <iframe
+                                            title="Pixel Store Flagship Studio Map"
+                                            src="https://maps.google.com/maps?ll=12.9716,77.6412&q=12.9716,77.6412&z=15&t=m&hl=en&output=embed"
+                                            className="w-full h-full border-0"
+                                            loading="lazy"
+                                            referrerPolicy="no-referrer-when-downgrade"
+                                        />
                                     </div>
+                                </div>
 
-                                    <div
-                                        aria-hidden="true"
-                                        className="pointer-events-none absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-radial from-[#f97316]/30 via-transparent to-transparent blur-2xl"
-                                    />
-                                </motion.div>
-
-                                <motion.div variants={up} className="rounded-[24px] bg-[#fffaf5] border border-[#fbe9dc] p-6 shadow-xs">
+                                <div className="rounded-[24px] bg-[#fffaf5] border border-[#fbe9dc] p-6 shadow-xs">
                                     <h4 className="text-sm font-black text-neutral-950 mb-3 flex items-center gap-2">
                                         <span className="w-2 h-2 rounded-full bg-[#f97316]" />
                                         Pixel Store Customer Commitments
@@ -859,72 +760,39 @@ export default function Contact() {
                                             "No automated chatbot queues — direct human communication",
                                             "Comprehensive warranty guidance & repair coordination",
                                             "GST input credit invoicing with registered business PAN/GSTIN",
-                                        ].map((item, i) => (
-                                            <motion.li
+                                        ].map((item) => (
+                                            <li
                                                 key={item}
-                                                initial={{ opacity: 0, x: -12 }}
-                                                whileInView={{ opacity: 1, x: 0 }}
-                                                viewport={{ once: true }}
-                                                transition={{ duration: 0.5, ease, delay: i * 0.1 }}
                                                 className="flex items-center gap-2.5"
                                             >
                                                 <span className="text-[#f97316] font-bold">✓</span>
                                                 <span>{item}</span>
-                                            </motion.li>
+                                            </li>
                                         ))}
                                     </ul>
-                                </motion.div>
+                                </div>
                             </motion.div>
                         </div>
                     </div>
                 </section>
 
-                {/* ================= NEW: TESTIMONIALS ================= */}
-                <section className="py-16 sm:py-20 bg-white border-t border-neutral-200/60">
-                    <div className={wrap}>
-                        {sectionHead("CUSTOMER STORIES", "Creators who", "shop with us")}
-                        <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-5" variants={stagger(0.12)} {...view}>
-                            {reviews.map((r) => (
-                                <motion.figure
-                                    key={r.n}
-                                    variants={up}
-                                    whileHover={{ y: -4, transition: { duration: 0.35, ease } }}
-                                    className="rounded-2xl bg-[#faf8f6] border border-neutral-200/80 p-6 hover:border-[#f97316]/40 transition-colors"
-                                >
-                                    <div className="flex gap-0.5 text-[#f97316] text-sm mb-3" aria-label="5 out of 5 stars">
-                                        ★★★★★
-                                    </div>
-                                    <blockquote className="text-sm text-neutral-700 leading-relaxed">“{r.q}”</blockquote>
-                                    <figcaption className="mt-4 flex items-center gap-3">
-                                        <span className="w-9 h-9 rounded-full bg-[#f97316] text-white text-xs font-bold flex items-center justify-center">
-                                            {r.n.split(" ").map((w) => w[0]).join("")}
-                                        </span>
-                                        <span>
-                                            <span className="block text-xs font-bold text-neutral-900">{r.n}</span>
-                                            <span className="block text-[11px] text-neutral-500">{r.r}</span>
-                                        </span>
-                                    </figcaption>
-                                </motion.figure>
-                            ))}
-                        </motion.div>
-                    </div>
-                </section>
+
 
                 {/* ================= NEW: LIVE STORE HOURS + RESPONSE TIMES ================= */}
-                <section className="py-16 sm:py-20 bg-[#faf8f5] border-t border-neutral-200/60">
+                <section className="py-16 sm:py-20 bg-[#faf8f5] border-t border-neutral-200/60 overflow-hidden">
                     <div className={`${wrap} grid grid-cols-1 lg:grid-cols-2 gap-6`}>
-                        <motion.div variants={up} {...view} className="rounded-[24px] bg-white border border-neutral-200/80 p-7">
+                        <motion.div variants={fromLeft} {...view} className="rounded-[24px] bg-white border border-neutral-200/80 p-7">
                             <div className="flex items-center justify-between mb-5">
                                 <h3 className="text-lg font-black text-neutral-950">Studio hours</h3>
                                 {isOpen !== null && (
                                     <span
-                                        className={`inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full border ${isOpen
+                                        className={`inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full border transition-all duration-300 ${isOpen
                                             ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                                            : "text-neutral-600 bg-neutral-100 border-neutral-200"
+                                            : "text-neutral-700 bg-neutral-100/90 border-neutral-300/80 shadow-xs"
                                             }`}
                                     >
                                         <span className={`w-2 h-2 rounded-full ${isOpen ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"}`} />
-                                        {isOpen ? "Open now" : "Closed now"}
+                                        <span>{isOpen ? "Open now" : "Closed now"}</span>
                                     </span>
                                 )}
                             </div>
@@ -939,7 +807,7 @@ export default function Contact() {
                             <p className="text-[11px] text-neutral-500 mt-4">All times in IST. Status updates every minute.</p>
                         </motion.div>
 
-                        <motion.div variants={up} {...view} className="rounded-[24px] bg-white border border-neutral-200/80 p-7">
+                        <motion.div variants={fromRight} {...view} className="rounded-[24px] bg-white border border-neutral-200/80 p-7">
                             <h3 className="text-lg font-black text-neutral-950 mb-5">Typical response time</h3>
                             <div className="space-y-4">
                                 {responseTimes.map((r, i) => (
@@ -965,77 +833,7 @@ export default function Contact() {
                 </section>
 
                 {/* ================= FAQ SECTION ================= */}
-                <section className="py-16 sm:py-20 border-t border-neutral-200/60 bg-white">
-                    <div className={wrap}>
-                        {sectionHead(
-                            "ANSWERS & HELP",
-                            "Frequently Asked",
-                            "Questions",
-                            "Clear answers to common questions about buying and servicing gear at Pixel Store."
-                        )}
 
-                        <motion.div
-                            className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 items-start"
-                            variants={stagger(0.1)}
-                            {...view}
-                        >
-                            {faqs.map((faq, idx) => {
-                                const open = activeFaq === idx;
-                                return (
-                                    <motion.div
-                                        key={faq.q}
-                                        variants={up}
-                                        onClick={() => setActiveFaq(open ? null : idx)}
-                                        whileHover={{ y: -3 }}
-                                        whileTap={{ scale: 0.99 }}
-                                        transition={{ duration: 0.35, ease }}
-                                        className={`rounded-2xl bg-[#faf8f6] border p-5 sm:p-6 shadow-xs cursor-pointer select-none transition-all duration-300 ${open
-                                            ? "border-[#f97316]/60 shadow-[0_10px_30px_rgba(249,115,22,0.1)] bg-[#fffaf7]"
-                                            : "border-neutral-200/80 hover:border-[#f97316]/40"
-                                            }`}
-                                    >
-                                        <div className="flex items-start justify-between gap-3">
-                                            <h3 className="text-sm sm:text-base font-bold text-neutral-900 leading-snug">{faq.q}</h3>
-                                            <motion.span
-                                                animate={{
-                                                    rotate: open ? 135 : 0,
-                                                    backgroundColor: open ? "#f97316" : "rgba(229,229,229,0.7)",
-                                                    color: open ? "#ffffff" : "#404040",
-                                                }}
-                                                transition={{ duration: 0.35, ease }}
-                                                className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-                                            >
-                                                +
-                                            </motion.span>
-                                        </div>
-                                        <AnimatePresence initial={false}>
-                                            {open && (
-                                                <motion.div
-                                                    key="content"
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: "auto", opacity: 1 }}
-                                                    exit={{ height: 0, opacity: 0 }}
-                                                    transition={{ duration: 0.45, ease }}
-                                                    className="overflow-hidden"
-                                                >
-                                                    <motion.p
-                                                        initial={{ y: -6, opacity: 0 }}
-                                                        animate={{ y: 0, opacity: 1 }}
-                                                        exit={{ y: -6, opacity: 0 }}
-                                                        transition={{ duration: 0.35, ease, delay: 0.05 }}
-                                                        className="text-xs sm:text-sm text-neutral-600 leading-relaxed mt-3 pt-3 border-t border-neutral-200/60"
-                                                    >
-                                                        {faq.a}
-                                                    </motion.p>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </motion.div>
-                                );
-                            })}
-                        </motion.div>
-                    </div>
-                </section>
 
                 {/* ================= NEW: FINAL CTA BANNER ================= */}
                 <section className="py-16 sm:py-20 bg-[#fbf9f5] border-t border-neutral-200/60">

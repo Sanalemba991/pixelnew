@@ -261,10 +261,10 @@ interface WhyProps {
 }
 
 export default function Why({
-    image = "/why-choose-us.jpg",
-    card1Image,
-    card2Image,
-    card3Image,
+    image = "/saaa.jpeg",
+    card1Image = "/card-camera-clean.jpg",
+    card2Image = "/card-iphone-clean.jpg",
+    card3Image = "/card-headphones-clean.jpg",
 }: WhyProps) {
     return (
         <section className="relative w-full bg-gradient-to-b from-[#fbf4f1] via-[#fcfaf8] to-white py-14 sm:py-20 lg:py-24 border-b border-neutral-100 overflow-hidden select-none">
