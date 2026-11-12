@@ -1,13 +1,56 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { PRODUCTS, Product } from "@/app/data/catalog";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Filter products based on search input
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
+
+    return PRODUCTS.filter((product) => {
+      const matchName = product.name.toLowerCase().includes(query);
+      const matchTagline = product.tagline?.toLowerCase().includes(query);
+      const matchCategory = product.categoryName?.toLowerCase().includes(query);
+      const matchDescription = product.description?.toLowerCase().includes(query);
+      return matchName || matchTagline || matchCategory || matchDescription;
+    }).slice(0, 6);
+  }, [searchQuery]);
+
+  // Handle outside click to close search dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close search dropdown on route change
+  useEffect(() => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+  }, [pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,10 +70,16 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Products", href: "/category" },
+    { name: "Collection", href: "/collection" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
+
+  const handleSelectProduct = (product: Product) => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+    router.push(`/category/${product.categorySlug}/${product.slug}`);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full pt-3 sm:pt-4 px-3 sm:px-6 lg:px-8 select-none transition-all duration-300 pointer-events-none">
@@ -90,15 +139,100 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Search Input Bar Pill */}
-        <div className="hidden md:flex items-center flex-1 max-w-[280px] lg:max-w-[320px] bg-neutral-50/80 hover:bg-neutral-100/80 border border-neutral-200/70 rounded-full px-3.5 py-1.5 text-xs text-neutral-400 gap-2 transition-colors">
-          <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="7" strokeWidth="2" />
-            <path d="m20 20-3.5-3.5" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          <span className="truncate text-neutral-400 text-[11px] sm:text-xs font-normal">
-            Search for cameras, iPhones, accessories...
-          </span>
+        {/* Search Input Bar with Real-time Product Results Dropdown */}
+        <div ref={searchContainerRef} className="relative hidden md:block flex-1 max-w-[280px] lg:max-w-[340px]">
+          <div className="flex items-center w-full bg-neutral-50/90 hover:bg-neutral-100/90 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#f97316]/30 border border-neutral-200/80 rounded-full px-3.5 py-1.5 text-xs text-neutral-700 gap-2 transition-all">
+            <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="7" strokeWidth="2" />
+              <path d="m20 20-3.5-3.5" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsSearchOpen(true);
+              }}
+              onFocus={() => {
+                if (searchQuery.trim().length > 0) {
+                  setIsSearchOpen(true);
+                }
+              }}
+              placeholder="Search cameras, lenses, gear..."
+              className="w-full bg-transparent border-none outline-none text-[12px] text-neutral-900 placeholder:text-neutral-400 font-medium"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setIsSearchOpen(false);
+                }}
+                className="text-neutral-400 hover:text-neutral-600 p-0.5"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Search Dropdown Results */}
+          {isSearchOpen && searchQuery.trim().length > 0 && (
+            <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl border border-neutral-200/90 shadow-[0_12px_40px_rgba(0,0,0,0.12)] p-2 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex justify-between items-center border-b border-neutral-100 mb-1">
+                <span>Products ({searchResults.length})</span>
+                <span className="text-[10px] lowercase font-normal text-neutral-400">matching &ldquo;{searchQuery}&rdquo;</span>
+              </div>
+
+              {searchResults.length > 0 ? (
+                <div className="max-h-[340px] overflow-y-auto space-y-1">
+                  {searchResults.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => handleSelectProduct(product)}
+                      className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-neutral-50 transition-colors text-left group"
+                    >
+                      <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200/60">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-neutral-900 truncate group-hover:text-[#f97316] transition-colors">
+                          {product.name}
+                        </p>
+                        <p className="text-[11px] text-neutral-500 truncate">
+                          {product.tagline || product.categoryName}
+                        </p>
+                        <span className="inline-block mt-0.5 text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-neutral-100 text-neutral-600 font-semibold">
+                          {product.categoryName}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                  <div className="pt-1.5 mt-1 border-t border-neutral-100">
+                    <Link
+                      href={`/products?q=${encodeURIComponent(searchQuery)}`}
+                      onClick={() => setIsSearchOpen(false)}
+                      className="block text-center text-[11px] font-bold text-[#f97316] hover:text-orange-700 py-1 transition-colors"
+                    >
+                      View all results &rarr;
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-6 px-4 text-center">
+                  <p className="text-xs text-neutral-600 font-semibold">No products found</p>
+                  <p className="text-[11px] text-neutral-400 mt-0.5">Try searching for camera, lens, iPhone, or power</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right: Actions (Clean outline buttons matching navbar style) */}
@@ -193,7 +327,67 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden mt-2 max-w-7xl mx-auto bg-white/95 backdrop-blur-md rounded-2xl border border-neutral-200 p-4 space-y-2 shadow-xl pointer-events-auto">
+        <div className="lg:hidden mt-2 max-w-7xl mx-auto bg-white/95 backdrop-blur-md rounded-2xl border border-neutral-200 p-4 space-y-3 shadow-xl pointer-events-auto">
+          {/* Mobile Search Bar */}
+          <div className="relative">
+            <div className="flex items-center w-full bg-neutral-100/90 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-700 gap-2">
+              <svg className="w-4 h-4 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7" strokeWidth="2" />
+                <path d="m20 20-3.5-3.5" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setIsSearchOpen(true);
+                }}
+                placeholder="Search products..."
+                className="w-full bg-transparent border-none outline-none text-xs text-neutral-900 placeholder:text-neutral-400"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="text-neutral-400 p-0.5"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Search Results */}
+            {searchQuery.trim().length > 0 && (
+              <div className="mt-2 bg-neutral-50 rounded-xl border border-neutral-200 p-2 max-h-[260px] overflow-y-auto space-y-1">
+                {searchResults.length > 0 ? (
+                  searchResults.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleSelectProduct(product);
+                      }}
+                      className="w-full flex items-center gap-2.5 p-2 rounded-lg bg-white border border-neutral-100 hover:border-orange-200 text-left"
+                    >
+                      <div className="relative w-9 h-9 rounded-md overflow-hidden bg-neutral-100 shrink-0">
+                        <Image src={product.image} alt={product.name} fill className="object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-neutral-900 truncate">{product.name}</p>
+                        <p className="text-[10px] text-neutral-500 truncate">{product.categoryName}</p>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-xs text-neutral-500 text-center py-3">No products found</p>
+                )}
+              </div>
+            )}
+          </div>
+
           {navLinks.map((link) => {
             const active = isActive(link.href);
             return (
