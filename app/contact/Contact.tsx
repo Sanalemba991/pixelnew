@@ -722,10 +722,7 @@ export default function Contact() {
                                                 >
                                                     <span>{isSubmitting ? "Dispatching..." : "Submit Inquiry"}</span>
                                                     <span className="text-sm">→</span>
-                                                </motion.button>
-
-                                                <span className="text-[11px] text-neutral-500">🔒 Verified confidential. No marketing spam.</span>
-                                            </div>
+                                                </motion.button>   </div>
                                         </motion.form>
                                     )}
                                 </AnimatePresence>
