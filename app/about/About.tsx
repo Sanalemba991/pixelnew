@@ -68,7 +68,7 @@ export default function About() {
         <MotionConfig reducedMotion="user">
             <main className={`${inter.className} overflow-x-hidden bg-[#fbf9f5] leading-relaxed text-[#111]`}>
                 {/* ================= FULL-BLEED HERO BANNER ================= */}
-                <section className="relative w-full h-screen min-h-[640px] max-h-[920px] bg-[#fbf9f5] border-b border-neutral-100 overflow-hidden select-none flex flex-col justify-between">
+                <section className="relative w-full aspect-[1920/1080] min-h-[500px] bg-[#fbf9f5] border-b border-neutral-100 overflow-hidden select-none flex flex-col justify-between">
                     {/* Full-bleed Hero Background Image spanning 100% of the screen seamlessly */}
                     <div className="absolute inset-0 z-0">
                         <Image

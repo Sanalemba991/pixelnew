@@ -4,7 +4,9 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { PRODUCTS, Product } from "@/app/data/catalog";
+import { products as PRODUCTS } from "@/app/lib/products";
+import { categories } from "@/app/lib/categories";
+import type { Product } from "@/app/lib/types";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -24,10 +26,10 @@ export default function Navbar() {
 
     return PRODUCTS.filter((product) => {
       const matchName = product.name.toLowerCase().includes(query);
-      const matchTagline = product.tagline?.toLowerCase().includes(query);
-      const matchCategory = product.categoryName?.toLowerCase().includes(query);
+      const matchBrand = product.brand?.toLowerCase().includes(query);
+      const matchCategory = product.categoryId?.toLowerCase().includes(query);
       const matchDescription = product.description?.toLowerCase().includes(query);
-      return matchName || matchTagline || matchCategory || matchDescription;
+      return matchName || matchBrand || matchCategory || matchDescription;
     }).slice(0, 6);
   }, [searchQuery]);
 
@@ -71,6 +73,7 @@ export default function Navbar() {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Collection", href: "/collection" },
+    { name: "Products", href: "/products" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
@@ -78,7 +81,11 @@ export default function Navbar() {
   const handleSelectProduct = (product: Product) => {
     setIsSearchOpen(false);
     setSearchQuery("");
-    router.push(`/category/${product.categorySlug}/${product.slug}`);
+    if (product.subcategoryId) {
+      router.push(`/collection/${product.categoryId}/${product.subcategoryId}/${product.slug}`);
+    } else {
+      router.push(`/collection/${product.categoryId}`);
+    }
   };
 
   return (
@@ -207,10 +214,10 @@ export default function Navbar() {
                           {product.name}
                         </p>
                         <p className="text-[11px] text-neutral-500 truncate">
-                          {product.tagline || product.categoryName}
+                          {product.brand}
                         </p>
                         <span className="inline-block mt-0.5 text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-neutral-100 text-neutral-600 font-semibold">
-                          {product.categoryName}
+                          {categories.find((c) => c.id === product.categoryId)?.name || product.categoryId}
                         </span>
                       </div>
                     </button>
@@ -377,7 +384,9 @@ export default function Navbar() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-neutral-900 truncate">{product.name}</p>
-                        <p className="text-[10px] text-neutral-500 truncate">{product.categoryName}</p>
+                        <p className="text-[10px] text-neutral-500 truncate">
+                          {categories.find((c) => c.id === product.categoryId)?.name || product.categoryId}
+                        </p>
                       </div>
                     </button>
                   ))

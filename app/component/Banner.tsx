@@ -107,7 +107,7 @@ export default function Banner() {
     const activeSlide = bannerSlides[currentSlide];
 
     return (
-        <section className="relative w-full h-screen min-h-[640px] max-h-[920px] bg-[#fbf9f5] border-b border-neutral-100 overflow-hidden select-none flex flex-col justify-between">
+        <section className="relative w-full aspect-[1920/1080] min-h-[500px] bg-[#fbf9f5] border-b border-neutral-100 overflow-hidden select-none flex flex-col justify-between">
             {/* Full-bleed Hero Image spanning 100% of the screen seamlessly from very top */}
             <div className="absolute inset-0 z-0">
                 <AnimatePresence mode="wait">

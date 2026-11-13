@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import { Inter } from "next/font/google";
+import { categories } from "@/app/lib/categories";
+import { subcategories } from "@/app/lib/subcategories";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -28,86 +30,28 @@ interface CollectionItem {
     href: string;
 }
 
-const CATEGORY_CARDS: CategoryCard[] = [
-    {
-        id: "cameras",
-        name: "Cameras",
-        sub: "DSLR • Mirrorless • Cinema",
-        image: "/cat/camera.png",
-        href: "/collection?category=cameras",
-    },
-    {
-        id: "iphones",
-        name: "iPhones",
-        sub: "Latest • Pro • Pro Max",
-        image: "/cat/iphone.png",
-        href: "/collection?category=iphones",
-    },
-    {
-        id: "lenses",
-        name: "Lenses",
-        sub: "Prime • Zoom • Specialty",
-        image: "/cat/lens.png",
-        href: "/collection?category=lenses",
-    },
-    {
-        id: "accessories",
-        name: "Accessories",
-        sub: "Mics • Lights • Storage",
-        image: "/cat/lighting.png",
-        href: "/collection?category=accessories",
-    },
-];
+// Dynamically mapped from categories library
+const CATEGORY_CARDS: CategoryCard[] = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    sub: c.sub,
+    image: c.image,
+    href: `/collection/${c.id}`,
+}));
 
-const ALL_COLLECTIONS: CollectionItem[] = [
-    {
-        id: "cameras",
-        name: "Cameras",
-        subtitle: "10+ Produtcs",
-        category: "cameras",
-        image: "/cat/camera.png",
-        href: "/collection?category=cameras",
-    },
-    {
-        id: "iphones",
-        name: "iPhones",
-        subtitle: "20+ Products",
-        category: "iphones",
-        image: "/cat/iphone.png",
-        href: "/collection?category=iphones",
-    },
-    {
-        id: "lenses",
-        name: "Lenses",
-        subtitle: "80+ Products",
-        category: "lenses",
-        image: "/cat/lens.png",
-        href: "/collection?category=lenses",
-    },
-    {
-        id: "gimbals",
-        name: "Gimbals",
-        subtitle: "20+ Products",
-        category: "accessories",
-        image: "/cat/gimbal.png",
-        href: "/collection?category=accessories",
-    },
-    {
-        id: "lighting",
-        name: "Lighting",
-        subtitle: "30+ Products",
-        category: "accessories",
-        image: "/cat/lighting.png",
-        href: "/collection?category=accessories",
-    },
-];
+// Dynamically mapped collection items from subcategories and categories
+const ALL_COLLECTIONS: CollectionItem[] = subcategories.map((s) => ({
+    id: s.id,
+    name: s.name,
+    subtitle: s.productCount ? `${s.productCount}+ Products` : "Explore Collection",
+    category: s.categoryId,
+    image: s.image,
+    href: `/collection/${s.categoryId}/${s.id}`,
+}));
 
 const FILTER_TABS = [
     { id: "all", label: "All Collection" },
-    { id: "cameras", label: "Cameras" },
-    { id: "iphones", label: "iPhones" },
-    { id: "lenses", label: "Lenses" },
-    { id: "accessories", label: "Accessories" },
+    ...categories.map((c) => ({ id: c.id, label: c.name })),
 ];
 
 const slideInLeft: Variants = {
@@ -269,42 +213,47 @@ export default function Collection() {
                                 <motion.div
                                     key={cat.id}
                                     variants={slideInLeft}
-                                    onClick={() => {
-                                        setActiveCategoryIndex(idx);
-                                        setActiveTab(cat.id);
-                                    }}
-                                    className={`group relative cursor-pointer overflow-hidden rounded-[26px] bg-white transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.12)] ${isSelected ? "ring-[2px] ring-[#ff6a00]" : "border border-neutral-200/80"
+                                    className={`group relative overflow-hidden rounded-[26px] bg-white transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.12)] ${isSelected ? "ring-[2px] ring-[#ff6a00]" : "border border-neutral-200/80"
                                         }`}
                                 >
-                                    {/* Image: No border radius on left, right, up; rounded on bottom */}
-                                    <div className="relative h-44 sm:h-48 w-full overflow-hidden rounded-b-[20px] bg-neutral-900">
-                                        <img
-                                            src={cat.image}
-                                            alt={cat.name}
-                                            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                    </div>
-
-                                    {/* Card Bottom Footer */}
-                                    <div className="p-4 flex items-center justify-between text-neutral-900 bg-white">
-                                        <div className="min-w-0 pr-2">
-                                            <h3
-                                                className={`font-extrabold text-[17px] sm:text-[18px] tracking-tight leading-tight transition-colors ${isSelected ? "text-[#ff6a00]" : "text-neutral-900 group-hover:text-[#ff6a00]"
-                                                    }`}
-                                            >
-                                                {cat.name}
-                                            </h3>
-                                            <p className="text-[12px] sm:text-[13px] text-neutral-500 font-medium tracking-normal mt-0.5 truncate">
-                                                {cat.sub}
-                                            </p>
+                                    <Link
+                                        href={cat.href}
+                                        className="block cursor-pointer"
+                                        onClick={() => {
+                                            setActiveCategoryIndex(idx);
+                                            setActiveTab(cat.id);
+                                        }}
+                                    >
+                                        {/* Image: No border radius on left, right, up; rounded on bottom */}
+                                        <div className="relative h-44 sm:h-48 w-full overflow-hidden rounded-b-[20px] bg-neutral-900">
+                                            <img
+                                                src={cat.image}
+                                                alt={cat.name}
+                                                className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                                            />
                                         </div>
 
-                                        <div className="h-9 w-9 rounded-full bg-neutral-900 text-white flex items-center justify-center shadow-md transition-all duration-200 group-hover:bg-[#ff6a00] flex-shrink-0 ml-2">
-                                            <svg className="w-4 h-4 stroke-[2.4]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                            </svg>
+                                        {/* Card Bottom Footer */}
+                                        <div className="p-4 flex items-center justify-between text-neutral-900 bg-white">
+                                            <div className="min-w-0 pr-2">
+                                                <h3
+                                                    className={`font-extrabold text-[17px] sm:text-[18px] tracking-tight leading-tight transition-colors ${isSelected ? "text-[#ff6a00]" : "text-neutral-900 group-hover:text-[#ff6a00]"
+                                                        }`}
+                                                >
+                                                    {cat.name}
+                                                </h3>
+                                                <p className="text-[12px] sm:text-[13px] text-neutral-500 font-medium tracking-normal mt-0.5 truncate">
+                                                    {cat.sub}
+                                                </p>
+                                            </div>
+
+                                            <div className="h-9 w-9 rounded-full bg-neutral-900 text-white flex items-center justify-center shadow-md transition-all duration-200 group-hover:bg-[#ff6a00] flex-shrink-0 ml-2">
+                                                <svg className="w-4 h-4 stroke-[2.4]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                                </svg>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 </motion.div>
                             );
                         })}
@@ -360,7 +309,7 @@ export default function Collection() {
 
                         <div className="relative z-10 pt-4">
                             <Link
-                                href="/collection?category=cameras"
+                                href="/collection/cameras"
                                 className="inline-flex items-center gap-2 rounded-full bg-white text-black px-4 sm:px-5 py-2 text-xs font-bold tracking-tight hover:bg-[#ff6a00] hover:text-white transition-colors duration-200 shadow-sm group/btn"
                             >
                                 <span>Explore Cameras</span>
@@ -408,7 +357,7 @@ export default function Collection() {
 
                         <div className="relative z-10 pt-4">
                             <Link
-                                href="/collection?category=iphones"
+                                href="/collection/iphones"
                                 className="inline-flex items-center gap-2 rounded-full bg-white text-neutral-900 px-4 sm:px-5 py-2 text-xs font-bold tracking-tight border border-neutral-300 hover:bg-black hover:text-white hover:border-black transition-colors duration-200 shadow-sm group/btn"
                             >
                                 <span>Explore iPhones</span>
