@@ -72,7 +72,7 @@ export default function About() {
                     {/* Full-bleed Hero Background Image spanning 100% of the screen seamlessly */}
                     <div className="absolute inset-0 z-0">
                         <Image
-                            src="/Sony Camera and iPhone Product Display.png"
+                            src="/hero pixel (1).png"
                             alt="About Pixel Store - Built for Creators"
                             fill
                             priority

@@ -27,7 +27,7 @@ const bannerSlides: BannerSlide[] = [
             "Premium gear for photography, videography and everyday content creation.",
         shopHref: "/shop",
         exploreHref: "/collections",
-        imageSrc: "/Sony Camera and iPhone Product Display.png",
+        imageSrc: "/hero pixel.png",
         imageAlt: "Cameras & iPhones Built for Creators",
     },
     {
