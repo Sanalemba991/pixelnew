@@ -159,6 +159,41 @@ export default function ProductClient({
   const faqs = product.faqs || [];
   const taglineSpecs = product.taglineSpecs || [];
 
+  // Smooth, eased slow scroll to target section
+  const smoothScrollTo = (targetId: string, duration = 1400) => {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      target.scrollIntoView({ behavior: "auto", block: "start" });
+      return;
+    }
+
+    const headerOffset = 32;
+    const startY = window.pageYOffset;
+    const targetY = target.getBoundingClientRect().top + startY - headerOffset;
+    const distance = targetY - startY;
+
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    let startTime: number | null = null;
+
+    const step = (timestamp: number) => {
+      if (startTime === null) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    };
+
+    requestAnimationFrame(step);
+  };
+
   return (
     <div className="min-h-screen bg-[#f3f4f6] text-neutral-900 font-sans antialiased selection:bg-[#ff6a00] selection:text-white">
       {/* ── SECTION 1: HERO SPOTLIGHT (Dynamic Product Data) ── */}
@@ -218,13 +253,14 @@ export default function ProductClient({
               {/* Action Buttons */}
               <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4 mb-8">
                 {product.specs && product.specs.length > 0 && (
-                  <a
-                    href="#specs"
-                    className="inline-flex items-center gap-2 bg-neutral-950 hover:bg-neutral-800 text-white font-semibold text-sm px-7 py-3.5 rounded-full shadow-lg transition-all hover:scale-105"
+                  <button
+                    type="button"
+                    onClick={() => smoothScrollTo("specs", 1500)}
+                    className="inline-flex items-center gap-2 bg-neutral-950 hover:bg-neutral-800 text-white font-semibold text-sm px-7 py-3.5 rounded-full shadow-lg transition-all hover:scale-105 cursor-pointer"
                   >
                     <span>Explore Features</span>
                     <span className="text-sm">→</span>
-                  </a>
+                  </button>
                 )}
 
 
