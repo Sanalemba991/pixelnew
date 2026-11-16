@@ -227,19 +227,7 @@ export default function ProductClient({
                   </a>
                 )}
 
-                <a
-                  href={`https://wa.me/919876543210?text=${encodeURIComponent(
-                    `Hi Pixel Store! I would like to inquire about the ${product.name}.`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 bg-white/80 hover:bg-white text-neutral-900 font-semibold text-sm px-6 py-3.5 rounded-full border border-neutral-300 shadow-sm transition-all hover:scale-105"
-                >
-                  <span className="w-5 h-5 rounded-full bg-neutral-950 text-white flex items-center justify-center text-[10px]">
-                    ▶
-                  </span>
-                  <span>Inquire Now</span>
-                </a>
+
               </motion.div>
 
               {/* Tech Spec Tagline Pills fetched strictly from product.taglineSpecs */}
