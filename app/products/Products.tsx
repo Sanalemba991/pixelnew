@@ -166,8 +166,24 @@ export default function Products() {
                         </div>
 
                         <h1 className="mt-4 sm:mt-5 text-[52px] sm:text-[64px] lg:text-[76px] font-black italic leading-[0.94] tracking-tight text-neutral-950">
-                            Our Product
-                            <span className="block font-black text-orange-500">Lineup</span>
+                            <span className="block not-italic text-neutral-950">Our Product</span>
+                            <span className="relative inline-block font-black text-orange-500 mt-1">
+                                Lineup
+                                <svg
+                                    className="absolute -bottom-2 sm:-bottom-3 left-0 w-[105%] h-3 sm:h-3.5 text-orange-500 pointer-events-none"
+                                    viewBox="0 0 180 12"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    preserveAspectRatio="none"
+                                >
+                                    <path
+                                        d="M2 9C50 2 125 1.5 178 8.5"
+                                        stroke="currentColor"
+                                        strokeWidth="4.5"
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                            </span>
                         </h1>
 
                         <p className="mt-5 sm:mt-6 max-w-[420px] text-[15px] sm:text-[16px] font-normal leading-relaxed text-neutral-600">

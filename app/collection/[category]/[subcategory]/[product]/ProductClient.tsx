@@ -253,17 +253,24 @@ export default function ProductClient({
               {/* Action Buttons */}
               <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4 mb-8">
                 {product.specs && product.specs.length > 0 && (
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => smoothScrollTo("specs", 1500)}
-                    className="inline-flex items-center gap-2 bg-neutral-950 hover:bg-neutral-800 text-white font-semibold text-sm px-7 py-3.5 rounded-full shadow-lg transition-all hover:scale-105 cursor-pointer"
+                    whileHover={{ y: -2, scale: 1.02 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    className="inline-flex items-center gap-2.5 px-6 sm:px-7 py-3 rounded-full bg-[#18181b] hover:bg-neutral-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-lg shadow-neutral-900/15 cursor-pointer"
                   >
                     <span>Explore Features</span>
-                    <span className="text-sm">→</span>
-                  </button>
+                    <motion.span
+                      className="text-sm leading-none inline-block text-[#f97316]"
+                      animate={{ y: [0, 4, 0] }}
+                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}
+                    >
+                      ↓
+                    </motion.span>
+                  </motion.button>
                 )}
-
-
               </motion.div>
 
               {/* Tech Spec Tagline Pills fetched strictly from product.taglineSpecs */}
