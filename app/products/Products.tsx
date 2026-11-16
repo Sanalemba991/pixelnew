@@ -141,7 +141,7 @@ export default function Products() {
     return (
         <main className="bg-white font-sans text-neutral-900 antialiased selection:bg-orange-500 mt-12 selection:text-white">
             {/* ───────── HERO FULL-BLEED BANNER HEADER (Whole header is background image with original height) ───────── */}
-            <header className="relative w-full min-h-[340px] sm:min-h-[400px] lg:min-h-[440px] overflow-hidden flex items-center border-b border-neutral-100">
+            <header className="relative w-full min-h-[300px] sm:min-h-[360px] lg:min-h-[400px] overflow-hidden flex items-center border-b border-neutral-100">
                 {/* Background image covering entire header */}
                 <div className="absolute inset-0 z-0">
                     <img
@@ -288,7 +288,7 @@ export default function Products() {
                         variants={staggerContainer}
                         className={`mt-6 grid gap-4 ${isList
                             ? "grid-cols-1 auto-rows-auto"
-                            : "grid-cols-1 md:grid-cols-12 md:auto-rows-[260px]"
+                            : "grid-cols-1 md:grid-cols-12 md:auto-rows-[270px]"
                             }`}
                     >
                         {currentProducts.map((p, index) => {
@@ -307,7 +307,7 @@ export default function Products() {
                                     className={`group relative overflow-hidden rounded-[26px] bg-gradient-to-br ${layout.bg} shadow-sm transition duration-300 hover:shadow-xl ${isList
                                         ? "flex h-[180px] w-full items-center justify-between"
                                         : layout.wrap
-                                        } ${tall ? "min-h-[520px]" : "min-h-[260px]"}`}
+                                        } ${tall ? "min-h-[560px]" : "min-h-[270px]"}`}
                                 >
                                     {/* Clickable Card Overlay */}
                                     <Link
@@ -316,47 +316,53 @@ export default function Products() {
                                         aria-label={`View ${p.name}`}
                                     />
 
-                                    {/* Product Visual - Full bleed backdrop cover */}
+                                    {/* Product Visual - Contained product display */}
                                     <div
-                                        className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-transform duration-700 ease-out group-hover:scale-105 ${isList ? "w-1/2 left-auto right-0" : ""
+                                        className={`absolute inset-0 flex items-center justify-center p-6 ${isList ? "w-1/2 left-auto right-12" : ""
                                             }`}
                                     >
                                         <img
                                             src={displayImage}
                                             alt={p.name}
-                                            className="h-full w-full object-cover object-center filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]"
+                                            className="max-h-full max-w-full object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover:scale-105"
                                             loading="lazy"
                                         />
                                     </div>
 
-                                    {/* Contrast gradient */}
-                                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10 opacity-60 transition-opacity group-hover:opacity-80" />
+                                    {/* Contrast gradient overlay */}
+                                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10 opacity-70 transition-opacity group-hover:opacity-85" />
 
                                     {/* Product Info */}
                                     <div
-                                        className={`pointer-events-none absolute left-0 z-10 p-5 sm:p-6 text-white max-w-[75%] ${tall
+                                        className={`absolute left-0 z-10 p-6 sm:p-7 text-white max-w-[70%] ${tall
                                             ? "bottom-0"
                                             : "bottom-0 top-0 flex flex-col justify-end"
                                             }`}
                                     >
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-[12px] font-semibold tracking-wide uppercase text-orange-400">
+                                            <span className="text-[11px] sm:text-[12px] font-mono font-bold tracking-wider uppercase text-orange-400">
                                                 {p.brand}
                                             </span>
                                             {p.tag && (
-                                                <span className="text-[10px] font-semibold bg-white/15 text-white/90 px-2 py-0.5 rounded-full backdrop-blur-xs">
+                                                <span className="text-[10px] font-mono font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-full uppercase">
                                                     {p.tag}
                                                 </span>
                                             )}
                                         </div>
 
-                                        <h3 className="text-[20px] sm:text-[23px] font-bold leading-tight tracking-tight text-white drop-shadow-sm group-hover:text-orange-300 transition-colors">
+                                        <h3 className="text-[20px] sm:text-[24px] font-black leading-tight tracking-tight text-white drop-shadow-sm group-hover:text-orange-400 transition-colors">
                                             {p.name}
                                         </h3>
 
-                                        <p className="mt-1 text-[13px] font-medium text-neutral-300">
-                                            {productType}
-                                        </p>
+                                        {p.description ? (
+                                            <p className="mt-1 text-[12px] sm:text-[13px] font-normal text-neutral-300 line-clamp-2 leading-relaxed">
+                                                {p.description}
+                                            </p>
+                                        ) : (
+                                            <p className="mt-1 text-[12px] sm:text-[13px] font-medium text-neutral-300">
+                                                {productType}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Interactive Bookmark Button on Top-Right */}

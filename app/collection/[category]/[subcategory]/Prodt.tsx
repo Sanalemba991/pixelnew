@@ -196,11 +196,10 @@ export default function Prodt({
                                     <Link
                                         key={sub.id}
                                         href={`/collection/${category.id}/${sub.id}`}
-                                        className={`px-4 py-2 rounded-full text-xs font-bold tracking-tight whitespace-nowrap transition-all ${
-                                            active
-                                                ? "bg-neutral-950 text-white shadow-sm"
-                                                : "bg-white text-neutral-700 border border-neutral-200 hover:border-black hover:text-black"
-                                        }`}
+                                        className={`px-4 py-2 rounded-full text-xs font-bold tracking-tight whitespace-nowrap transition-all ${active
+                                            ? "bg-neutral-950 text-white shadow-sm"
+                                            : "bg-white text-neutral-700 border border-neutral-200 hover:border-black hover:text-black"
+                                            }`}
                                     >
                                         {sub.name}
                                     </Link>
@@ -230,11 +229,10 @@ export default function Prodt({
                                         key={b}
                                         type="button"
                                         onClick={() => setSelectedBrand(b)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ${
-                                            selectedBrand === b
-                                                ? "bg-neutral-950 text-white"
-                                                : "bg-white text-neutral-600 border border-neutral-200 hover:border-neutral-400"
-                                        }`}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ${selectedBrand === b
+                                            ? "bg-neutral-950 text-white"
+                                            : "bg-white text-neutral-600 border border-neutral-200 hover:border-neutral-400"
+                                            }`}
                                     >
                                         {b}
                                     </button>
@@ -310,11 +308,10 @@ export default function Prodt({
                                 aria-label="Grid view"
                                 aria-pressed={!isList}
                                 onClick={() => setView("grid")}
-                                className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
-                                    !isList
-                                        ? "border-orange-300 bg-orange-50 text-orange-500 shadow-xs"
-                                        : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
-                                }`}
+                                className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${!isList
+                                    ? "border-orange-300 bg-orange-50 text-orange-500 shadow-xs"
+                                    : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                                    }`}
                             >
                                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                                     <rect x="3" y="3" width="7" height="7" rx="1.5" />
@@ -329,11 +326,10 @@ export default function Prodt({
                                 aria-label="List view"
                                 aria-pressed={isList}
                                 onClick={() => setView("list")}
-                                className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
-                                    isList
-                                        ? "border-orange-300 bg-orange-50 text-orange-500 shadow-xs"
-                                        : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
-                                }`}
+                                className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${isList
+                                    ? "border-orange-300 bg-orange-50 text-orange-500 shadow-xs"
+                                    : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                                    }`}
                             >
                                 <svg
                                     className="h-4 w-4"
@@ -361,11 +357,10 @@ export default function Prodt({
                             initial="hidden"
                             animate="visible"
                             variants={staggerContainer}
-                            className={`grid gap-4 ${
-                                isList
-                                    ? "grid-cols-1 auto-rows-auto"
-                                    : "grid-cols-1 md:grid-cols-12 md:auto-rows-[270px]"
-                            }`}
+                            className={`grid gap-4 ${isList
+                                ? "grid-cols-1 auto-rows-auto"
+                                : "grid-cols-1 md:grid-cols-12 md:auto-rows-[270px]"
+                                }`}
                         >
                             {processedProducts.map((p, index) => {
                                 const layout = getCardLayout(index);
@@ -377,17 +372,15 @@ export default function Prodt({
                                     <motion.article
                                         key={p.id}
                                         variants={cardVariant}
-                                        className={`group relative overflow-hidden rounded-[26px] bg-gradient-to-br ${layout.bg} shadow-sm transition duration-300 hover:shadow-xl ${
-                                            isList
-                                                ? "flex h-[180px] w-full items-center justify-between"
-                                                : layout.wrap
-                                        } ${tall ? "min-h-[560px]" : "min-h-[270px]"}`}
+                                        className={`group relative overflow-hidden rounded-[26px] bg-gradient-to-br ${layout.bg} shadow-sm transition duration-300 hover:shadow-xl ${isList
+                                            ? "flex h-[180px] w-full items-center justify-between"
+                                            : layout.wrap
+                                            } ${tall ? "min-h-[560px]" : "min-h-[270px]"}`}
                                     >
                                         {/* Background / Product Image */}
                                         <div
-                                            className={`absolute inset-0 flex items-center justify-center p-6 ${
-                                                isList ? "w-1/2 left-auto right-12" : ""
-                                            }`}
+                                            className={`absolute inset-0 flex items-center justify-center p-6 ${isList ? "w-1/2 left-auto right-12" : ""
+                                                }`}
                                         >
                                             <img
                                                 src={p.image}
@@ -402,11 +395,10 @@ export default function Prodt({
 
                                         {/* Rendered Details Overlay */}
                                         <div
-                                            className={`absolute left-0 z-10 p-6 sm:p-7 text-white max-w-[70%] ${
-                                                tall
-                                                    ? "bottom-0"
-                                                    : "bottom-0 top-0 flex flex-col justify-end"
-                                            }`}
+                                            className={`absolute left-0 z-10 p-6 sm:p-7 text-white max-w-[70%] ${tall
+                                                ? "bottom-0"
+                                                : "bottom-0 top-0 flex flex-col justify-end"
+                                                }`}
                                         >
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="text-[11px] sm:text-[12px] font-mono font-bold tracking-wider uppercase text-orange-400">
